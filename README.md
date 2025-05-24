@@ -62,7 +62,7 @@ root
 Clone the project
 
 ```bash
-git clone 
+git clone https://github.com/lampnthe173556/Su25_PRN232_BookingTicketCinemaSystem.git
 cd  BookingTicketSystem_FrontEnd
 ```
 

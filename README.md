@@ -63,7 +63,7 @@ Clone the project
 
 ```bash
 git clone 
-cd  đến mục front-end đấy
+cd  BookingTicketSystem_FrontEnd
 ```
 
 Install dependencies

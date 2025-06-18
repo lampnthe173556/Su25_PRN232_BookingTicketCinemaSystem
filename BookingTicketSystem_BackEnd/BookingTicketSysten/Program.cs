@@ -1,5 +1,11 @@
+using Amazon.Runtime;
+using Amazon.S3;
 using BookingTicketSysten.Models;
-using BookingTicketSysten.Services;
+using BookingTicketSysten.Models.DTOs.StoreDTO;
+using BookingTicketSysten.Services.GenerService;
+using BookingTicketSysten.Services.MovieServices;
+using BookingTicketSysten.Services.PersonServices;
+using BookingTicketSysten.Services.StoreService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -14,30 +20,15 @@ namespace BookingTicketSysten
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
+            #region Database_Context
             builder.Services.AddControllers();
             builder.Services.AddDbContext<MovieTicketBookingSystemContext>(options =>
                  options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
+            #endregion
+           
 
-            // Add JWT Authentication
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                        ValidAudience = builder.Configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not found")))
-                    };
-                });
 
-            
-
+            #region CORS
             // Add CORS
             builder.Services.AddCors(options =>
             {
@@ -49,6 +40,27 @@ namespace BookingTicketSysten
                                .AllowAnyHeader();
                     });
             });
+            #endregion
+
+            #region s3Client_with_DI
+            builder.Services.Configure<R2Config>(builder.Configuration.GetSection("R2"));
+            var r2Config = builder.Configuration.GetSection("R2").Get<R2Config>();
+
+            var s3Config = new AmazonS3Config { ServiceURL = r2Config.Endpoint };
+            var credentials = new BasicAWSCredentials(r2Config.AccessKey, r2Config.SecretKey);
+            builder.Services.AddSingleton<IAmazonS3>(new AmazonS3Client(credentials, s3Config));
+
+            #endregion
+
+            #region DI_Services
+
+            builder.Services.AddScoped<IPersonService, PersonService>();
+            builder.Services.AddScoped<IMovieService, MovieService>();
+            builder.Services.AddScoped<IGenreService, GenreService>();
+            builder.Services.AddScoped<IStorageService, R2StorageService>();
+
+            #endregion
+
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

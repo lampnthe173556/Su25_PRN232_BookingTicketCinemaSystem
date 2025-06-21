@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System;
 using System.Linq;
 using BookingTicketSysten.Models.DTOs.PersonDTOs;
+using BookingTicketSysten.Models.DTOs;
 
 namespace BookingTicketSysten.Services.PersonServices
 {

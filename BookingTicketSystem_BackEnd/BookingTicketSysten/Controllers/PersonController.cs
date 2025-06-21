@@ -1,5 +1,6 @@
 ﻿using BookingTicketSysten.Models;
 using BookingTicketSysten.Models.DTOs;
+using BookingTicketSysten.Models.DTOs.PersonDTOs;
 using BookingTicketSysten.Services.PersonServices;
 using Microsoft.AspNetCore.Mvc;
 using System;

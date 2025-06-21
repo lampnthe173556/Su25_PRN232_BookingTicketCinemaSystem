@@ -1,4 +1,5 @@
 using BookingTicketSysten.Models.DTOs;
+using BookingTicketSysten.Models.DTOs.PersonDTOs;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.Threading.Tasks;

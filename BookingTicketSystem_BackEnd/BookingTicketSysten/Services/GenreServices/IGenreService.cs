@@ -1,4 +1,4 @@
-using BookingTicketSysten.Models.DTOs.GenreDTOs;
+using BookingTicketSysten.Models.DTOs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

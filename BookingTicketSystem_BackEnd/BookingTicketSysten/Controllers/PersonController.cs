@@ -87,5 +87,31 @@ namespace BookingTicketSysten.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpGet("actors")]
+        public async Task<IActionResult> GetAllActors()
+        {
+            try
+            {
+                var result = await _personService.GetAllActorsAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+        [HttpGet("directors")]
+        public async Task<IActionResult> GetAllDirectors()
+        {
+            try
+            {
+                var result = await _personService.GetAllDirectorsAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 } 

@@ -1,105 +1,552 @@
-import React, { useState } from "react";
-import { Table, Input, Button, Modal, Form, message, Popconfirm } from "antd";
+import React, { useState, useEffect } from 'react';
+import { 
+  Table, 
+  Button, 
+  Modal, 
+  Form, 
+  Input, 
+  Space, 
+  Popconfirm, 
+  Card,
+  Typography,
+  DatePicker,
+  Upload,
+  Image,
+  Select,
+  InputNumber,
+  Row,
+  Col,
+  Tag
+} from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, EyeOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
+import movieService from '../../services/movieService';
+import genreService from '../../services/genreService';
+import personService from '../../services/personService';
+import { Movie } from '../../models/Movie';
+import Toast from '../../components/Toast';
+import '../../styles/admin.css';
 
-const initialMovies = [
-  { id: 1, title: "Avengers: Endgame", genre: "Hành động", director: "Anthony Russo", actor: "Robert Downey Jr.", year: 2019 },
-  { id: 2, title: "Joker", genre: "Tâm lý", director: "Todd Phillips", actor: "Joaquin Phoenix", year: 2019 },
-];
+const { Title } = Typography;
+const { TextArea } = Input;
+const { Option } = Select;
 
 const Movies = () => {
-  const [movies, setMovies] = useState(initialMovies);
-  const [search, setSearch] = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
+  const [movies, setMovies] = useState([]);
+  const [genres, setGenres] = useState([]);
+  const [actors, setActors] = useState([]);
+  const [directors, setDirectors] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingMovie, setEditingMovie] = useState(null);
+  const [posterFile, setPosterFile] = useState(null);
+  const [posterPreviewUrl, setPosterPreviewUrl] = useState(null);
   const [form] = Form.useForm();
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [detailMovie, setDetailMovie] = useState(null);
 
-  const filtered = movies.filter(m => m.title.toLowerCase().includes(search.toLowerCase()));
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [moviesData, genresData, actorsData, directorsData] = await Promise.all([
+        movieService.getAll(),
+        genreService.getAll(),
+        personService.getAllActors(),
+        personService.getAllDirectors()
+      ]);
+      
+      setMovies(moviesData);
+      setGenres(genresData);
+      setActors(actorsData);
+      setDirectors(directorsData);
+    } catch (error) {
+      Toast.error('Không thể tải dữ liệu: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAdd = () => {
-    setEditing(null);
+    setEditingMovie(null);
+    setPosterFile(null);
+    setPosterPreviewUrl(null);
     form.resetFields();
-    setModalOpen(true);
+    setModalVisible(true);
   };
+
   const handleEdit = (record) => {
-    setEditing(record);
-    form.setFieldsValue(record);
-    setModalOpen(true);
-  };
-  const handleDelete = (id) => {
-    setMovies(movies.filter(m => m.id !== id));
-    message.success("Xóa phim thành công!");
-  };
-  const handleOk = () => {
-    form.validateFields().then(values => {
-      if (editing) {
-        setMovies(movies.map(m => m.id === editing.id ? { ...editing, ...values } : m));
-        message.success("Cập nhật phim thành công!");
-      } else {
-        setMovies([...movies, { ...values, id: Date.now() }]);
-        message.success("Thêm phim thành công!");
-      }
-      setModalOpen(false);
+    setEditingMovie(record);
+    setPosterFile(null);
+    setPosterPreviewUrl(record.posterUrl || null);
+    form.setFieldsValue({
+      title: record.title,
+      description: record.description,
+      duration: record.duration,
+      language: record.language,
+      releaseDate: record.releaseDate ? dayjs(record.releaseDate) : null,
+      trailerUrl: record.trailerUrl,
+      rating: record.rating,
+      genreIds: record.genres?.map(g => g.id) || [],
+      actorIds: record.actors?.map(a => a.id) || [],
+      directorIds: record.directors?.map(d => d.id) || []
     });
+    setModalVisible(true);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await movieService.delete(id);
+      Toast.success('Xóa phim thành công');
+      loadData();
+    } catch (error) {
+      Toast.error('Không thể xóa phim: ' + error.message);
+    }
+  };
+
+  const handleSubmit = async (values) => {
+    try {
+      const movieData = new Movie({
+        ...values,
+        releaseDate: values.releaseDate ? values.releaseDate.toISOString().split('T')[0] : null,
+        genres: values.genreIds?.map(id => genres.find(g => g.id === id)) || [],
+        actors: values.actorIds?.map(id => actors.find(a => a.id === id)) || [],
+        directors: values.directorIds?.map(id => directors.find(d => d.id === id)) || []
+      });
+      
+      if (editingMovie) {
+        await movieService.update(editingMovie.id, movieData, posterFile);
+        Toast.success('Cập nhật phim thành công');
+      } else {
+        await movieService.create(movieData, posterFile);
+        Toast.success('Thêm phim thành công');
+      }
+      
+      setModalVisible(false);
+      loadData();
+    } catch (error) {
+      Toast.error('Có lỗi xảy ra: ' + error.message);
+    }
+  };
+
+  const handlePosterChange = (info) => {
+    console.log('Poster change info:', info);
+    if (info.file) {
+      const file = info.file.originFileObj || info.file;
+      console.log('Selected file:', file);
+      if (file) {
+        setPosterFile(file);
+        // Tạo URL preview
+        const previewUrl = URL.createObjectURL(file);
+        console.log('Preview URL:', previewUrl);
+        setPosterPreviewUrl(previewUrl);
+      }
+    }
+  };
+
+  // Cleanup URL khi component unmount
+  useEffect(() => {
+    return () => {
+      if (posterPreviewUrl) {
+        URL.revokeObjectURL(posterPreviewUrl);
+      }
+    };
+  }, [posterPreviewUrl]);
+
+  const handleViewDetail = (record) => {
+    setDetailMovie(record);
+    setDetailVisible(true);
   };
 
   const columns = [
-    { title: "Tên phim", dataIndex: "title", key: "title" },
-    { title: "Thể loại", dataIndex: "genre", key: "genre" },
-    { title: "Đạo diễn", dataIndex: "director", key: "director" },
-    { title: "Diễn viên", dataIndex: "actor", key: "actor" },
-    { title: "Năm", dataIndex: "year", key: "year" },
     {
-      title: "Hành động",
-      key: "action",
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+      width: 80,
+    },
+    {
+      title: 'Poster',
+      dataIndex: 'posterUrl',
+      key: 'posterUrl',
+      width: 100,
+      render: (url) => (
+        <Image
+          width={60}
+          height={80}
+          src={url || '/placeholder-movie.png'}
+          fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
+          style={{ objectFit: 'cover', borderRadius: '4px' }}
+        />
+      ),
+    },
+    {
+      title: 'Tên phim',
+      dataIndex: 'title',
+      key: 'title',
+      width: 200,
+    },
+    {
+      title: 'Thời lượng',
+      dataIndex: 'duration',
+      key: 'duration',
+      width: 100,
+      render: (duration) => `${duration} phút`,
+    },
+    {
+      title: 'Ngôn ngữ',
+      dataIndex: 'language',
+      key: 'language',
+      width: 100,
+    },
+    {
+      title: 'Thể loại',
+      dataIndex: 'genres',
+      key: 'genres',
+      width: 150,
+      render: (genres) => (
+        <div>
+          {genres?.map(genre => (
+            <Tag key={genre.id} color="blue">{genre.name}</Tag>
+          ))}
+        </div>
+      ),
+    },
+    {
+      title: 'Điểm đánh giá',
+      dataIndex: 'rating',
+      key: 'rating',
+      width: 100,
+      render: (rating) => rating ? `${rating}/10` : '-',
+    },
+    {
+      title: 'Thao tác',
+      key: 'actions',
+      width: 240,
       render: (_, record) => (
-        <>
-          <Button size="small" onClick={() => handleEdit(record)} style={{ marginRight: 8 }}>Sửa</Button>
-          <Popconfirm title="Xóa phim này?" onConfirm={() => handleDelete(record.id)}>
-            <Button danger size="small">Xóa</Button>
+        <Space>
+          <Button
+            icon={<EyeOutlined />}
+            onClick={() => handleViewDetail(record)}
+            size="small"
+          >
+            Xem chi tiết
+          </Button>
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+            size="small"
+          >
+            Sửa
+          </Button>
+          <Popconfirm
+            title="Bạn có chắc chắn muốn xóa phim này?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Có"
+            cancelText="Không"
+          >
+            <Button
+              type="primary"
+              danger
+              icon={<DeleteOutlined />}
+              size="small"
+            >
+              Xóa
+            </Button>
           </Popconfirm>
-        </>
+        </Space>
       ),
     },
   ];
 
   return (
-    <div style={{ width: "100%" }}>
-      <h2 style={{ marginBottom: 16 }}>Quản lý phim</h2>
-      <Button type="primary" onClick={handleAdd} style={{ marginBottom: 16 }}>Thêm phim</Button>
-      <Input.Search
-        placeholder="Tìm kiếm theo tên phim..."
-        allowClear
-        style={{ maxWidth: 300, marginBottom: 16, marginLeft: 16 }}
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-      />
-      <Table columns={columns} dataSource={filtered} rowKey="id" pagination={{ pageSize: 6 }} style={{ width: "100%" }} scroll={{ x: true }} />
-      <Modal
-        title={editing ? "Cập nhật phim" : "Thêm phim"}
-        open={modalOpen}
-        onOk={handleOk}
-        onCancel={() => setModalOpen(false)}
-        okText="Lưu"
-        cancelText="Hủy"
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item name="title" label="Tên phim" rules={[{ required: true, message: "Nhập tên phim!" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="genre" label="Thể loại" rules={[{ required: true, message: "Nhập thể loại!" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="director" label="Đạo diễn" rules={[{ required: true, message: "Nhập đạo diễn!" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="actor" label="Diễn viên" rules={[{ required: true, message: "Nhập diễn viên!" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="year" label="Năm" rules={[{ required: true, message: "Nhập năm!" }]}>
-            <Input type="number" />
-          </Form.Item>
-        </Form>
-      </Modal>
+    <div style={{ padding: '24px' }}>
+      <Card>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <Title level={3}>Quản lý phim</Title>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAdd}
+          >
+            Thêm phim
+          </Button>
+        </div>
+
+        <Table
+          columns={columns}
+          dataSource={movies}
+          rowKey="id"
+          loading={loading}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} phim`,
+          }}
+        />
+
+        <Modal
+          title={editingMovie ? 'Sửa phim' : 'Thêm phim mới'}
+          open={modalVisible}
+          onCancel={() => setModalVisible(false)}
+          footer={null}
+          destroyOnClose
+          width={800}
+        >
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
+          >
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="title"
+                  label="Tên phim"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập tên phim!' },
+                    { min: 2, message: 'Tên phim phải có ít nhất 2 ký tự!' }
+                  ]}
+                >
+                  <Input placeholder="Nhập tên phim" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="language"
+                  label="Ngôn ngữ"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập ngôn ngữ!' }
+                  ]}
+                >
+                  <Input placeholder="Nhập ngôn ngữ" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="duration"
+                  label="Thời lượng (phút)"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập thời lượng!' },
+                    { type: 'number', min: 1, message: 'Thời lượng phải lớn hơn 0!' }
+                  ]}
+                >
+                  <InputNumber 
+                    placeholder="Nhập thời lượng" 
+                    style={{ width: '100%' }}
+                    min={1}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="rating"
+                  label="Điểm đánh giá"
+                  rules={[
+                    { type: 'number', min: 0, max: 10, message: 'Điểm từ 0-10!' }
+                  ]}
+                >
+                  <InputNumber 
+                    placeholder="Nhập điểm (0-10)" 
+                    style={{ width: '100%' }}
+                    min={0}
+                    max={10}
+                    step={0.1}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="releaseDate"
+                  label="Ngày phát hành"
+                >
+                  <DatePicker 
+                    placeholder="Chọn ngày phát hành" 
+                    style={{ width: '100%' }}
+                    format="DD/MM/YYYY"
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="trailerUrl"
+                  label="Link trailer"
+                >
+                  <Input placeholder="Nhập link trailer (YouTube)" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Form.Item
+              name="description"
+              label="Mô tả"
+              rules={[
+                { required: true, message: 'Vui lòng nhập mô tả!' },
+                { min: 10, message: 'Mô tả phải có ít nhất 10 ký tự!' }
+              ]}
+            >
+              <TextArea 
+                rows={4} 
+                placeholder="Nhập mô tả phim"
+              />
+            </Form.Item>
+
+            <Row gutter={16}>
+              <Col span={8}>
+                <Form.Item
+                  name="genreIds"
+                  label="Thể loại"
+                  rules={[
+                    { required: true, message: 'Vui lòng chọn thể loại!' }
+                  ]}
+                >
+                  <Select
+                    mode="multiple"
+                    placeholder="Chọn thể loại"
+                    style={{ width: '100%' }}
+                  >
+                    {genres.map(genre => (
+                      <Option key={genre.id} value={genre.id}>
+                        {genre.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item
+                  name="actorIds"
+                  label="Diễn viên"
+                >
+                  <Select
+                    mode="multiple"
+                    placeholder="Chọn diễn viên"
+                    style={{ width: '100%' }}
+                  >
+                    {actors.map(actor => (
+                      <Option key={actor.id} value={actor.id}>
+                        {actor.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item
+                  name="directorIds"
+                  label="Đạo diễn"
+                >
+                  <Select
+                    mode="multiple"
+                    placeholder="Chọn đạo diễn"
+                    style={{ width: '100%' }}
+                  >
+                    {directors.map(director => (
+                      <Option key={director.id} value={director.id}>
+                        {director.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Form.Item
+              label="Poster phim"
+            >
+              <Upload
+                name="poster"
+                listType="picture-card"
+                className="poster-uploader"
+                showUploadList={false}
+                beforeUpload={(file) => {
+                  // Ngăn upload tự động
+                  return false;
+                }}
+                onChange={handlePosterChange}
+                accept="image/*"
+              >
+                {posterPreviewUrl ? (
+                  <img 
+                    src={posterPreviewUrl} 
+                    alt="poster preview" 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  />
+                ) : editingMovie?.posterUrl ? (
+                  <img 
+                    src={editingMovie.posterUrl} 
+                    alt="current poster" 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  />
+                ) : (
+                  <div>
+                    <UploadOutlined />
+                    <div style={{ marginTop: 8 }}>Tải poster</div>
+                  </div>
+                )}
+              </Upload>
+            </Form.Item>
+
+            <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+              <Space>
+                <Button onClick={() => setModalVisible(false)}>
+                  Hủy
+                </Button>
+                <Button type="primary" htmlType="submit">
+                  {editingMovie ? 'Cập nhật' : 'Thêm'}
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        <Modal
+          title={detailMovie ? `Chi tiết phim: ${detailMovie.title}` : 'Chi tiết phim'}
+          open={detailVisible}
+          onCancel={() => setDetailVisible(false)}
+          footer={null}
+          width={700}
+        >
+          {detailMovie && (
+            <div style={{ display: 'flex', gap: 24 }}>
+              <div>
+                <Image
+                  width={180}
+                  height={240}
+                  src={detailMovie.posterUrl || '/placeholder-movie.png'}
+                  style={{ objectFit: 'cover', borderRadius: 8 }}
+                  alt={detailMovie.title}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <h2>{detailMovie.title}</h2>
+                <p><b>Mô tả:</b> {detailMovie.description}</p>
+                <p><b>Thời lượng:</b> {detailMovie.duration} phút</p>
+                <p><b>Ngôn ngữ:</b> {detailMovie.language}</p>
+                <p><b>Ngày phát hành:</b> {detailMovie.releaseDate ? (typeof detailMovie.releaseDate === 'string' ? new Date(detailMovie.releaseDate).toLocaleDateString('vi-VN') : detailMovie.releaseDate.toLocaleDateString('vi-VN')) : '-'}</p>
+                <p><b>Điểm đánh giá:</b> {detailMovie.rating ? `${detailMovie.rating}/10` : '-'}</p>
+                <p><b>Thể loại:</b> {detailMovie.genres?.map(g => <Tag key={g.id}>{g.name}</Tag>)}</p>
+                <p><b>Diễn viên:</b> {detailMovie.actors?.map(a => <Tag key={a.id}>{a.name}</Tag>)}</p>
+                <p><b>Đạo diễn:</b> {detailMovie.directors?.map(d => <Tag key={d.id}>{d.name}</Tag>)}</p>
+                {detailMovie.trailerUrl && (
+                  <p><b>Trailer:</b> <a href={detailMovie.trailerUrl} target="_blank" rel="noopener noreferrer">Xem trailer</a></p>
+                )}
+              </div>
+            </div>
+          )}
+        </Modal>
+      </Card>
     </div>
   );
 };

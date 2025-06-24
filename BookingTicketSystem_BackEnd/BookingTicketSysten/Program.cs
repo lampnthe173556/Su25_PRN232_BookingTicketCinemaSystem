@@ -1,5 +1,7 @@
 using Amazon.Runtime;
 using Amazon.S3;
+using BookingTicketSysten.Extensions;
+using BookingTicketSysten.Middleware;
 using BookingTicketSysten.Models;
 using BookingTicketSysten.Models.DTOs.StoreDTO;
 using BookingTicketSysten.Services.CommentServices;
@@ -62,6 +64,12 @@ namespace BookingTicketSysten
             builder.Services.AddScoped<BookingTicketSysten.Services.MovieServices.IMovieFavoriteService, BookingTicketSysten.Services.MovieServices.MovieFavoriteService>();
             builder.Services.AddScoped<IVoteService, VoteService>();
             builder.Services.AddScoped<ICommentService, CommentService>();
+            
+            // Add Payment Services
+            builder.Services.AddPaymentServices();
+            
+            // Add City Services
+            builder.Services.AddCityServices();
 
             #endregion
 
@@ -82,6 +90,9 @@ namespace BookingTicketSysten
             app.UseHttpsRedirection();
 
             app.UseCors("AllowAll");
+
+            // Add Payment Logging Middleware
+            app.UsePaymentLogging();
 
             app.UseAuthentication();
             app.UseAuthorization();

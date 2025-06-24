@@ -4,10 +4,12 @@ using BookingTicketSysten.Extensions;
 using BookingTicketSysten.Middleware;
 using BookingTicketSysten.Models;
 using BookingTicketSysten.Models.DTOs.StoreDTO;
+using BookingTicketSysten.Services.CommentServices;
 using BookingTicketSysten.Services.GenerService;
 using BookingTicketSysten.Services.MovieServices;
 using BookingTicketSysten.Services.PersonServices;
 using BookingTicketSysten.Services.StoreService;
+using BookingTicketSysten.Services.VoteServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -58,6 +60,10 @@ namespace BookingTicketSysten
             builder.Services.AddScoped<IMovieService, MovieService>();
             builder.Services.AddScoped<IGenreService, GenreService>();
             builder.Services.AddScoped<IStorageService, R2StorageService>();
+            builder.Services.AddScoped<BookingTicketSysten.Services.VoteServices.IVoteService, BookingTicketSysten.Services.VoteServices.VoteService>();
+            builder.Services.AddScoped<BookingTicketSysten.Services.MovieServices.IMovieFavoriteService, BookingTicketSysten.Services.MovieServices.MovieFavoriteService>();
+            builder.Services.AddScoped<IVoteService, VoteService>();
+            builder.Services.AddScoped<ICommentService, CommentService>();
             
             // Add Payment Services
             builder.Services.AddPaymentServices();

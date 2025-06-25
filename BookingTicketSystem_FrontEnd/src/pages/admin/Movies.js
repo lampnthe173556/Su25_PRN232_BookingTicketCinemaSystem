@@ -34,8 +34,7 @@ const { Option } = Select;
 const Movies = () => {
   const [movies, setMovies] = useState([]);
   const [genres, setGenres] = useState([]);
-  const [actors, setActors] = useState([]);
-  const [directors, setDirectors] = useState([]);
+  const [persons, setPersons] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingMovie, setEditingMovie] = useState(null);
@@ -52,17 +51,15 @@ const Movies = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [moviesData, genresData, actorsData, directorsData] = await Promise.all([
+      const [moviesData, genresData, personsData] = await Promise.all([
         movieService.getAll(),
         genreService.getAll(),
-        personService.getAllActors(),
-        personService.getAllDirectors()
+        personService.getAll(),
       ]);
       
       setMovies(moviesData);
       setGenres(genresData);
-      setActors(actorsData);
-      setDirectors(directorsData);
+      setPersons(personsData);
     } catch (error) {
       Toast.error('Không thể tải dữ liệu: ' + error.message);
     } finally {
@@ -117,8 +114,8 @@ const Movies = () => {
         ...values,
         releaseDate: values.releaseDate ? values.releaseDate.toISOString().split('T')[0] : null,
         genres: values.genreIds?.map(id => genres.find(g => g.id === id)) || [],
-        actors: values.actorIds?.map(id => actors.find(a => a.id === id)) || [],
-        directors: values.directorIds?.map(id => directors.find(d => d.id === id)) || []
+        actors: values.actorIds?.map(id => persons.find(a => a.id === id)) || [],
+        directors: values.directorIds?.map(id => persons.find(d => d.id === id)) || []
       });
       
       if (editingMovie) {
@@ -420,9 +417,13 @@ const Movies = () => {
                     mode="multiple"
                     placeholder="Chọn thể loại"
                     style={{ width: '100%' }}
+                    showSearch
+                    filterOption={(input, option) =>
+                      (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                    }
                   >
                     {genres.filter(g => g.id !== null && g.id !== undefined).map((genre, idx) => (
-                      <Option key={idx} value={genre.id}>{genre.name}</Option>
+                      <Option key={genre.id} value={genre.id}>{genre.name}</Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -436,9 +437,13 @@ const Movies = () => {
                     mode="multiple"
                     placeholder="Chọn diễn viên"
                     style={{ width: '100%' }}
+                    showSearch
+                    filterOption={(input, option) =>
+                      (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                    }
                   >
-                    {actors.filter(a => a.id !== null && a.id !== undefined).map((actor, idx) => (
-                      <Option key={idx} value={actor.id}>{actor.name}</Option>
+                    {persons.filter(a => a.id !== null && a.id !== undefined).map((person, idx) => (
+                      <Option key={person.id} value={person.id}>{person.name}</Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -452,9 +457,13 @@ const Movies = () => {
                     mode="multiple"
                     placeholder="Chọn đạo diễn"
                     style={{ width: '100%' }}
+                    showSearch
+                    filterOption={(input, option) =>
+                      (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                    }
                   >
-                    {directors.filter(d => d.id !== null && d.id !== undefined).map((director, idx) => (
-                      <Option key={idx} value={director.id}>{director.name}</Option>
+                    {persons.filter(d => d.id !== null && d.id !== undefined).map((person, idx) => (
+                      <Option key={person.id} value={person.id}>{person.name}</Option>
                     ))}
                   </Select>
                 </Form.Item>

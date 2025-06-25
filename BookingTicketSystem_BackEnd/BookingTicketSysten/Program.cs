@@ -4,6 +4,8 @@ using BookingTicketSysten.Extensions;
 using BookingTicketSysten.Middleware;
 using BookingTicketSysten.Models;
 using BookingTicketSysten.Models.DTOs.StoreDTO;
+using BookingTicketSysten.Services.CinemaHallServices;
+using BookingTicketSysten.Services.CinemaServices;
 using BookingTicketSysten.Services.CommentServices;
 using BookingTicketSysten.Services.GenerService;
 using BookingTicketSysten.Services.MovieServices;
@@ -64,7 +66,11 @@ namespace BookingTicketSysten
             builder.Services.AddScoped<BookingTicketSysten.Services.MovieServices.IMovieFavoriteService, BookingTicketSysten.Services.MovieServices.MovieFavoriteService>();
             builder.Services.AddScoped<IVoteService, VoteService>();
             builder.Services.AddScoped<ICommentService, CommentService>();
-            
+            builder.Services.AddScoped<ICinemaService, CinemaService>();
+            builder.Services.AddScoped<ICinemaHallService, CinemaHallService>();
+
+
+
             // Add Payment Services
             builder.Services.AddPaymentServices();
             

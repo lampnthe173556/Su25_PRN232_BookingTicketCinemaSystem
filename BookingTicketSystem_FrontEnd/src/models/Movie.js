@@ -1,6 +1,6 @@
 export class Movie {
   constructor(data = {}) {
-    this.id = data.id || null;
+    this.id = data.id || data.movieId || null;
     this.title = data.title || '';
     this.description = data.description || '';
     this.duration = data.duration || 0;
@@ -18,7 +18,7 @@ export class Movie {
 
   static fromApi(data) {
     return new Movie({
-      id: data.id,
+      id: data.movieId || data.id,
       title: data.title,
       description: data.description,
       duration: data.duration,
@@ -27,9 +27,18 @@ export class Movie {
       trailerUrl: data.trailerUrl,
       rating: data.rating,
       posterUrl: data.posterUrl,
-      genres: data.genres || [],
-      actors: data.actors || [],
-      directors: data.directors || [],
+      genres: data.genres?.map(genre => ({
+        ...genre,
+        id: genre.genreId || genre.id
+      })) || [],
+      actors: data.actors?.map(actor => ({
+        ...actor,
+        id: actor.personId || actor.id
+      })) || [],
+      directors: data.directors?.map(director => ({
+        ...director,
+        id: director.personId || director.id
+      })) || [],
       createdAt: data.createdAt,
       updatedAt: data.updatedAt
     });
@@ -44,9 +53,9 @@ export class Movie {
       ReleaseDate: this.releaseDate ? (typeof this.releaseDate === 'string' ? this.releaseDate : this.releaseDate.toISOString().split('T')[0]) : '',
       TrailerUrl: this.trailerUrl,
       Rating: this.rating,
-      GenreIds: this.genres.map(g => g.id),
-      ActorIds: this.actors.map(a => a.id),
-      DirectorIds: this.directors.map(d => d.id)
+      GenreIds: this.genres.map(g => g.id).filter(id => id !== null && id !== undefined),
+      ActorIds: this.actors.map(a => a.id).filter(id => id !== null && id !== undefined),
+      DirectorIds: this.directors.map(d => d.id).filter(id => id !== null && id !== undefined)
     };
   }
 } 

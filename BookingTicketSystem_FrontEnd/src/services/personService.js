@@ -49,7 +49,7 @@ class PersonService {
           'Content-Type': 'multipart/form-data',
         },
       });
-      return Person.fromApi(response.data);
+      return response.data;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -64,7 +64,7 @@ class PersonService {
           'Content-Type': 'multipart/form-data',
         },
       });
-      return Person.fromApi(response.data);
+      return response.data;
     } catch (error) {
       throw this.handleError(error);
     }

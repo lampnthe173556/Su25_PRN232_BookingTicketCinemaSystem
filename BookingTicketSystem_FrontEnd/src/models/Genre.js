@@ -1,6 +1,6 @@
 export class Genre {
   constructor(data = {}) {
-    this.id = data.id || null;
+    this.id = data.id || data.genreId || null;
     this.name = data.name || '';
     this.createdAt = data.createdAt || null;
     this.updatedAt = data.updatedAt || null;
@@ -8,7 +8,7 @@ export class Genre {
 
   static fromApi(data) {
     return new Genre({
-      id: data.id,
+      id: data.genreId || data.id,
       name: data.name,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt

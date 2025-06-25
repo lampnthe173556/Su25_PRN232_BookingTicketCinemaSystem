@@ -1,6 +1,6 @@
 export class Person {
   constructor(data = {}) {
-    this.id = data.id || null;
+    this.id = data.id || data.personId || null;
     this.name = data.name || '';
     this.dateOfBirth = data.dateOfBirth || null;
     this.biography = data.biography || '';
@@ -12,7 +12,7 @@ export class Person {
 
   static fromApi(data) {
     return new Person({
-      id: data.id,
+      id: data.personId || data.id,
       name: data.name,
       dateOfBirth: data.dateOfBirth,
       biography: data.biography,

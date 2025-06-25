@@ -76,10 +76,14 @@ const Actors = () => {
   };
 
   const handleDelete = async (id) => {
+    if (!id) {
+      Toast.error('ID không hợp lệ');
+      return;
+    }
     try {
       await personService.delete(id);
       Toast.success('Xóa diễn viên/đạo diễn thành công');
-      loadPersons();
+      loadPersons(); // Reload lại danh sách từ backend
     } catch (error) {
       Toast.error('Không thể xóa diễn viên/đạo diễn: ' + error.message);
     }
@@ -101,7 +105,7 @@ const Actors = () => {
       }
       
       setModalVisible(false);
-      loadPersons();
+      loadPersons(); // Reload lại danh sách từ backend
     } catch (error) {
       Toast.error('Có lỗi xảy ra: ' + error.message);
     }
@@ -132,18 +136,22 @@ const Actors = () => {
   }, [photoPreviewUrl]);
 
   const handleViewDetail = async (record) => {
+    console.log('Chi tiết person:', record);
     setDetailPerson(record);
     setDetailVisible(true);
     setLoadingDetail(true);
-    try {
-      const movieService = (await import('../../services/movieService')).default;
-      const movies = await movieService.getByPerson(record.id);
-      setMoviesByPerson(movies);
-    } catch (error) {
+    if (record.id !== null && record.id !== undefined) {
+      try {
+        const movieService = (await import('../../services/movieService')).default;
+        const movies = await movieService.getByPerson(record.id);
+        setMoviesByPerson(movies);
+      } catch (error) {
+        setMoviesByPerson([]);
+      }
+    } else {
       setMoviesByPerson([]);
-    } finally {
-      setLoadingDetail(false);
     }
+    setLoadingDetail(false);
   };
 
   const columns = [
@@ -248,8 +256,8 @@ const Actors = () => {
 
         <Table
           columns={columns}
-          dataSource={persons}
-          rowKey="id"
+          dataSource={persons.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
+          rowKey="key"
           loading={loading}
           pagination={{
             pageSize: 10,
@@ -257,6 +265,7 @@ const Actors = () => {
             showQuickJumper: true,
             showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} diễn viên/đạo diễn`,
           }}
+          scroll={{ x: 'max-content' }}
         />
 
         <Modal
@@ -264,7 +273,7 @@ const Actors = () => {
           open={modalVisible}
           onCancel={() => setModalVisible(false)}
           footer={null}
-          destroyOnClose
+          destroyOnHidden
           width={600}
         >
           <Form
@@ -368,6 +377,7 @@ const Actors = () => {
           open={detailVisible}
           onCancel={() => setDetailVisible(false)}
           footer={null}
+          destroyOnHidden
           width={600}
         >
           {detailPerson && (
@@ -393,8 +403,8 @@ const Actors = () => {
                   <p>Không có phim nào liên quan.</p>
                 ) : (
                   <ul>
-                    {moviesByPerson.map(movie => (
-                      <li key={movie.id}><b>{movie.title}</b> ({movie.releaseDate ? (typeof movie.releaseDate === 'string' ? new Date(movie.releaseDate).getFullYear() : movie.releaseDate.getFullYear()) : 'N/A'})</li>
+                    {moviesByPerson.map((movie, idx) => (
+                      <li key={idx}><b>{movie.title}</b> ({movie.releaseDate ? (typeof movie.releaseDate === 'string' ? new Date(movie.releaseDate).getFullYear() : movie.releaseDate.getFullYear()) : 'N/A'})</li>
                     ))}
                   </ul>
                 )}

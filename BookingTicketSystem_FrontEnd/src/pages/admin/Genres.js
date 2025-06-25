@@ -9,15 +9,18 @@ import {
   Popconfirm, 
   Card,
   Typography,
-  message
+  message,
+  Select
 } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import genreService from '../../services/genreService';
+import movieService from '../../services/movieService';
 import { Genre } from '../../models/Genre';
 import Toast from '../../components/Toast';
 import '../../styles/admin.css';
 
 const { Title } = Typography;
+const { Option } = Select;
 
 const Genres = () => {
   const [genres, setGenres] = useState([]);
@@ -61,6 +64,10 @@ const Genres = () => {
   };
 
   const handleDelete = async (id) => {
+    if (!id) {
+      Toast.error('ID không hợp lệ');
+      return;
+    }
     try {
       await genreService.delete(id);
       Toast.success('Xóa thể loại thành công');
@@ -90,18 +97,21 @@ const Genres = () => {
   };
 
   const handleViewDetail = async (record) => {
+    console.log('Chi tiết genre:', record);
     setDetailGenre(record);
     setDetailVisible(true);
     setLoadingDetail(true);
-    try {
-      const movieService = (await import('../../services/movieService')).default;
-      const movies = await movieService.getByGenre(record.id);
-      setMoviesByGenre(movies);
-    } catch (error) {
+    if (record.id !== null && record.id !== undefined) {
+      try {
+        const movies = await movieService.getByGenre(record.id);
+        setMoviesByGenre(movies);
+      } catch (error) {
+        setMoviesByGenre([]);
+      }
+    } else {
       setMoviesByGenre([]);
-    } finally {
-      setLoadingDetail(false);
     }
+    setLoadingDetail(false);
   };
 
   const columns = [
@@ -179,8 +189,8 @@ const Genres = () => {
 
         <Table
           columns={columns}
-          dataSource={genres}
-          rowKey="id"
+          dataSource={genres.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
+          rowKey="key"
           loading={loading}
           pagination={{
             pageSize: 10,
@@ -188,6 +198,7 @@ const Genres = () => {
             showQuickJumper: true,
             showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} thể loại`,
           }}
+          scroll={{ x: 'max-content' }}
         />
 
         <Modal
@@ -195,7 +206,7 @@ const Genres = () => {
           open={modalVisible}
           onCancel={() => setModalVisible(false)}
           footer={null}
-          destroyOnClose
+          destroyOnHidden
         >
           <Form
             form={form}
@@ -231,6 +242,7 @@ const Genres = () => {
           open={detailVisible}
           onCancel={() => setDetailVisible(false)}
           footer={null}
+          destroyOnHidden
           width={600}
         >
           {detailGenre && (
@@ -245,8 +257,8 @@ const Genres = () => {
                 <p>Không có phim nào thuộc thể loại này.</p>
               ) : (
                 <ul>
-                  {moviesByGenre.map(movie => (
-                    <li key={movie.id}><b>{movie.title}</b> ({movie.releaseDate ? (typeof movie.releaseDate === 'string' ? new Date(movie.releaseDate).getFullYear() : movie.releaseDate.getFullYear()) : 'N/A'})</li>
+                  {moviesByGenre.map((movie, idx) => (
+                    <li key={idx}><b>{movie.title}</b> ({movie.releaseDate ? (typeof movie.releaseDate === 'string' ? new Date(movie.releaseDate).getFullYear() : movie.releaseDate.getFullYear()) : 'N/A'})</li>
                   ))}
                 </ul>
               )}

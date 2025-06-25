@@ -90,18 +90,22 @@ const Movies = () => {
       releaseDate: record.releaseDate ? dayjs(record.releaseDate) : null,
       trailerUrl: record.trailerUrl,
       rating: record.rating,
-      genreIds: record.genres?.map(g => g.id) || [],
-      actorIds: record.actors?.map(a => a.id) || [],
-      directorIds: record.directors?.map(d => d.id) || []
+      genreIds: (record.genres?.map(g => g.id).filter(id => id !== null && id !== undefined)) || [],
+      actorIds: (record.actors?.map(a => a.id).filter(id => id !== null && id !== undefined)) || [],
+      directorIds: (record.directors?.map(d => d.id).filter(id => id !== null && id !== undefined)) || []
     });
     setModalVisible(true);
   };
 
   const handleDelete = async (id) => {
+    if (!id) {
+      Toast.error('ID không hợp lệ');
+      return;
+    }
     try {
       await movieService.delete(id);
       Toast.success('Xóa phim thành công');
-      loadData();
+      loadData(); // Reload lại danh sách từ backend
     } catch (error) {
       Toast.error('Không thể xóa phim: ' + error.message);
     }
@@ -126,7 +130,7 @@ const Movies = () => {
       }
       
       setModalVisible(false);
-      loadData();
+      loadData(); // Reload lại danh sách từ backend
     } catch (error) {
       Toast.error('Có lỗi xảy ra: ' + error.message);
     }
@@ -209,8 +213,8 @@ const Movies = () => {
       width: 150,
       render: (genres) => (
         <div>
-          {genres?.map(genre => (
-            <Tag key={genre.id} color="blue">{genre.name}</Tag>
+          {genres?.map((genre, idx) => (
+            <Tag key={idx} color="blue">{genre.name}</Tag>
           ))}
         </div>
       ),
@@ -279,8 +283,8 @@ const Movies = () => {
 
         <Table
           columns={columns}
-          dataSource={movies}
-          rowKey="id"
+          dataSource={movies.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
+          rowKey="key"
           loading={loading}
           pagination={{
             pageSize: 10,
@@ -288,6 +292,7 @@ const Movies = () => {
             showQuickJumper: true,
             showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} phim`,
           }}
+          scroll={{ x: 'max-content' }}
         />
 
         <Modal
@@ -295,7 +300,7 @@ const Movies = () => {
           open={modalVisible}
           onCancel={() => setModalVisible(false)}
           footer={null}
-          destroyOnClose
+          destroyOnHidden
           width={800}
         >
           <Form
@@ -416,10 +421,8 @@ const Movies = () => {
                     placeholder="Chọn thể loại"
                     style={{ width: '100%' }}
                   >
-                    {genres.map(genre => (
-                      <Option key={genre.id} value={genre.id}>
-                        {genre.name}
-                      </Option>
+                    {genres.filter(g => g.id !== null && g.id !== undefined).map((genre, idx) => (
+                      <Option key={idx} value={genre.id}>{genre.name}</Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -434,10 +437,8 @@ const Movies = () => {
                     placeholder="Chọn diễn viên"
                     style={{ width: '100%' }}
                   >
-                    {actors.map(actor => (
-                      <Option key={actor.id} value={actor.id}>
-                        {actor.name}
-                      </Option>
+                    {actors.filter(a => a.id !== null && a.id !== undefined).map((actor, idx) => (
+                      <Option key={idx} value={actor.id}>{actor.name}</Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -452,10 +453,8 @@ const Movies = () => {
                     placeholder="Chọn đạo diễn"
                     style={{ width: '100%' }}
                   >
-                    {directors.map(director => (
-                      <Option key={director.id} value={director.id}>
-                        {director.name}
-                      </Option>
+                    {directors.filter(d => d.id !== null && d.id !== undefined).map((director, idx) => (
+                      <Option key={idx} value={director.id}>{director.name}</Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -516,6 +515,7 @@ const Movies = () => {
           open={detailVisible}
           onCancel={() => setDetailVisible(false)}
           footer={null}
+          destroyOnHidden
           width={700}
         >
           {detailMovie && (
@@ -536,9 +536,9 @@ const Movies = () => {
                 <p><b>Ngôn ngữ:</b> {detailMovie.language}</p>
                 <p><b>Ngày phát hành:</b> {detailMovie.releaseDate ? (typeof detailMovie.releaseDate === 'string' ? new Date(detailMovie.releaseDate).toLocaleDateString('vi-VN') : detailMovie.releaseDate.toLocaleDateString('vi-VN')) : '-'}</p>
                 <p><b>Điểm đánh giá:</b> {detailMovie.rating ? `${detailMovie.rating}/10` : '-'}</p>
-                <p><b>Thể loại:</b> {detailMovie.genres?.map(g => <Tag key={g.id}>{g.name}</Tag>)}</p>
-                <p><b>Diễn viên:</b> {detailMovie.actors?.map(a => <Tag key={a.id}>{a.name}</Tag>)}</p>
-                <p><b>Đạo diễn:</b> {detailMovie.directors?.map(d => <Tag key={d.id}>{d.name}</Tag>)}</p>
+                <p><b>Thể loại:</b> {detailMovie.genres?.map((g, idx) => <Tag key={idx}>{g.name}</Tag>)}</p>
+                <p><b>Diễn viên:</b> {detailMovie.actors?.map((a, idx) => <Tag key={idx}>{a.name}</Tag>)}</p>
+                <p><b>Đạo diễn:</b> {detailMovie.directors?.map((d, idx) => <Tag key={idx}>{d.name}</Tag>)}</p>
                 {detailMovie.trailerUrl && (
                   <p><b>Trailer:</b> <a href={detailMovie.trailerUrl} target="_blank" rel="noopener noreferrer">Xem trailer</a></p>
                 )}

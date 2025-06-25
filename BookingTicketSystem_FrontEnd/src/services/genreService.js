@@ -39,7 +39,7 @@ class GenreService {
     try {
       const dto = this.buildDto(genreData);
       const response = await this.api.post('/', dto);
-      return Genre.fromApi(response.data);
+      return response.data;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -49,7 +49,7 @@ class GenreService {
     try {
       const dto = this.buildDto(genreData);
       const response = await this.api.put(`/${id}`, dto);
-      return Genre.fromApi(response.data);
+      return response.data;
     } catch (error) {
       throw this.handleError(error);
     }

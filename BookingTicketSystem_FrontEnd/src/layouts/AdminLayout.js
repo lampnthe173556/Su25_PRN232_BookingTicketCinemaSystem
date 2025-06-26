@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Layout, Menu, Avatar, Button } from "antd";
 import {
   DashboardOutlined,
@@ -44,6 +44,16 @@ const AdminLayout = ({ children }) => {
 
   // Tính toán margin-left động cho header và content
   const sidebarWidth = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
+
+  // Ref và log chiều rộng
+  const contentRef = useRef();
+  useEffect(() => {
+    if (contentRef.current) {
+      console.log("Chiều rộng sidebar:", sidebarWidth, "px");
+      console.log("Chiều rộng body (content):", contentRef.current.offsetWidth, "px");
+      console.log("Chiều rộng màn hình (viewport):", window.innerWidth, "px");
+    }
+  }, [sidebarWidth, collapsed]);
 
   return (
     <Layout>
@@ -129,10 +139,11 @@ const AdminLayout = ({ children }) => {
             marginLeft: sidebarWidth,
             background: "#f5f6fa",
             minHeight: "100vh",
-            width: "100%",
+            width: `calc(100vw - ${sidebarWidth}px)`,
             padding: "32px 32px 0 32px",
             transition: "margin-left 0.2s"
           }}
+          ref={contentRef}
         >
           {children}
         </Content>

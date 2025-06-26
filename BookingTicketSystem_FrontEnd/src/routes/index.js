@@ -12,6 +12,7 @@ import Movies from "../pages/admin/Movies";
 import Genres from "../pages/admin/Genres";
 import Actors from "../pages/admin/Actors";
 import Showtimes from "../pages/admin/Showtimes";
+import Cities from "../pages/admin/Cities";
 import AdminLayout from "../layouts/AdminLayout";
 import UserLayout from "../layouts/UserLayout";
 // Các page khác sẽ thêm sau
@@ -55,6 +56,7 @@ const AppRoutes = () => (
     <Route path="/admin/genres" element={<AdminRoute><AdminLayout><Genres /></AdminLayout></AdminRoute>} />
     <Route path="/admin/actors" element={<AdminRoute><AdminLayout><Actors /></AdminLayout></AdminRoute>} />
     <Route path="/admin/showtimes" element={<AdminRoute><AdminLayout><Showtimes /></AdminLayout></AdminRoute>} />
+    <Route path="/admin/cities" element={<AdminRoute><AdminLayout><Cities /></AdminLayout></AdminRoute>} />
     {/* Các route khác sẽ thêm sau */}
   </Routes>
 );

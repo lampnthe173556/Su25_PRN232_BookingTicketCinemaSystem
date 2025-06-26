@@ -210,7 +210,7 @@ const Actors = () => {
             onClick={() => handleViewDetail(record)}
             size="small"
           >
-            Xem chi tiết
+            
           </Button>
           <Button
             type="primary"
@@ -218,7 +218,7 @@ const Actors = () => {
             onClick={() => handleEdit(record)}
             size="small"
           >
-            Sửa
+            
           </Button>
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa diễn viên/đạo diễn này?"
@@ -232,7 +232,7 @@ const Actors = () => {
               icon={<DeleteOutlined />}
               size="small"
             >
-              Xóa
+              
             </Button>
           </Popconfirm>
         </Space>

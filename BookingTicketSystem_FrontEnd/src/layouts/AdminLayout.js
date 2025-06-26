@@ -10,6 +10,7 @@ import {
   LogoutOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
+  EnvironmentOutlined,
 } from "@ant-design/icons";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../styles/admin.css";
@@ -24,6 +25,7 @@ const menuItems = [
   { key: "users", icon: <UserOutlined />, label: "Quản lý user", link: "/admin/users" },
   { key: "movies", icon: <VideoCameraOutlined />, label: "Quản lý phim", link: "/admin/movies" },
   { key: "genres", icon: <TagsOutlined />, label: "Quản lý thể loại", link: "/admin/genres" },
+  { key: "cities", icon: <EnvironmentOutlined />, label: "Quản lý thành phố", link: "/admin/cities" },
   { key: "actors", icon: <TeamOutlined />, label: "Quản lý actor/director", link: "/admin/actors" },
   { key: "showtimes", icon: <CalendarOutlined />, label: "Quản lý suất chiếu", link: "/admin/showtimes" },
 ];

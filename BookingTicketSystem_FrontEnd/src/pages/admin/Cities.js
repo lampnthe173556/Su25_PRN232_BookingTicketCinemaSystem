@@ -1,62 +1,56 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Table, 
-  Button, 
-  Modal, 
-  Form, 
-  Input, 
-  Space, 
-  Popconfirm, 
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  Space,
+  Popconfirm,
   Card,
   Typography,
-  message,
-  Select
 } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
-import genreService from '../../services/genreService';
-import movieService from '../../services/movieService';
-import { Genre } from '../../models/Genre';
+import cityService from '../../services/cityService';
+import { City } from '../../models/City';
 import Toast from '../../components/Toast';
 import '../../styles/admin.css';
 
 const { Title } = Typography;
-const { Option } = Select;
 
-const Genres = () => {
-  const [genres, setGenres] = useState([]);
+const Cities = () => {
+  const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingGenre, setEditingGenre] = useState(null);
+  const [editingCity, setEditingCity] = useState(null);
   const [form] = Form.useForm();
   const [detailVisible, setDetailVisible] = useState(false);
-  const [detailGenre, setDetailGenre] = useState(null);
-  const [moviesByGenre, setMoviesByGenre] = useState([]);
-  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [detailCity, setDetailCity] = useState(null);
 
   useEffect(() => {
-    loadGenres();
+    loadCities();
   }, []);
 
-  const loadGenres = async () => {
+  const loadCities = async () => {
     setLoading(true);
     try {
-      const data = await genreService.getAll();
-      setGenres(data);
+      const data = await cityService.getAll();
+      setCities(data);
     } catch (error) {
-      Toast.error('Không thể tải danh sách thể loại: ' + error.message);
+      Toast.error('Không thể tải danh sách thành phố: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleAdd = () => {
-    setEditingGenre(null);
+    setEditingCity(null);
     form.resetFields();
     setModalVisible(true);
   };
 
   const handleEdit = (record) => {
-    setEditingGenre(record);
+    setEditingCity(record);
     form.setFieldsValue({
       name: record.name
     });
@@ -69,49 +63,34 @@ const Genres = () => {
       return;
     }
     try {
-      await genreService.delete(id);
-      Toast.success('Xóa thể loại thành công');
-      loadGenres();
+      await cityService.delete(id);
+      Toast.success('Xóa thành phố thành công');
+      loadCities();
     } catch (error) {
-      Toast.error('Không thể xóa thể loại: ' + error.message);
+      Toast.error('Không thể xóa thành phố: ' + error.message);
     }
   };
 
   const handleSubmit = async (values) => {
     try {
-      const genreData = new Genre(values);
-      
-      if (editingGenre) {
-        await genreService.update(editingGenre.id, genreData);
-        Toast.success('Cập nhật thể loại thành công');
+      const cityData = new City(values);
+      if (editingCity) {
+        await cityService.update(editingCity.id, cityData);
+        Toast.success('Cập nhật thành phố thành công');
       } else {
-        await genreService.create(genreData);
-        Toast.success('Thêm thể loại thành công');
+        await cityService.create(cityData);
+        Toast.success('Thêm thành phố thành công');
       }
-      
       setModalVisible(false);
-      loadGenres();
+      loadCities();
     } catch (error) {
       Toast.error('Có lỗi xảy ra: ' + error.message);
     }
   };
 
-  const handleViewDetail = async (record) => {
-    console.log('Chi tiết genre:', record);
-    setDetailGenre(record);
+  const handleViewDetail = (record) => {
+    setDetailCity(record);
     setDetailVisible(true);
-    setLoadingDetail(true);
-    if (record.id !== null && record.id !== undefined) {
-      try {
-        const movies = await movieService.getByGenre(record.id);
-        setMoviesByGenre(movies);
-      } catch (error) {
-        setMoviesByGenre([]);
-      }
-    } else {
-      setMoviesByGenre([]);
-    }
-    setLoadingDetail(false);
   };
 
   const columns = [
@@ -122,15 +101,15 @@ const Genres = () => {
       width: 80,
     },
     {
-      title: 'Tên thể loại',
+      title: 'Tên thành phố',
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: 'Ngày tạo',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (date) => date ? new Date(date).toLocaleDateString('vi-VN') : '-',
+      title: 'Số lượng rạp',
+      dataIndex: 'cinemaCount',
+      key: 'cinemaCount',
+      width: 120,
     },
     {
       title: 'Thao tác',
@@ -143,7 +122,7 @@ const Genres = () => {
             onClick={() => handleViewDetail(record)}
             size="small"
           >
-            
+          
           </Button>
           <Button
             type="primary"
@@ -151,10 +130,10 @@ const Genres = () => {
             onClick={() => handleEdit(record)}
             size="small"
           >
-            
+          
           </Button>
           <Popconfirm
-            title="Bạn có chắc chắn muốn xóa thể loại này?"
+            title="Bạn có chắc chắn muốn xóa thành phố này?"
             onConfirm={() => handleDelete(record.id)}
             okText="Có"
             cancelText="Không"
@@ -165,7 +144,7 @@ const Genres = () => {
               icon={<DeleteOutlined />}
               size="small"
             >
-                
+            
             </Button>
           </Popconfirm>
         </Space>
@@ -177,32 +156,32 @@ const Genres = () => {
     <div style={{ padding: '24px' }}>
       <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <Title level={3}>Quản lý thể loại phim</Title>
+          <Title level={3}>Quản lý thành phố</Title>
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleAdd}
           >
-            Thêm thể loại
+            Thêm thành phố
           </Button>
         </div>
 
         <Table
           columns={columns}
-          dataSource={genres.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
+          dataSource={cities.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
           rowKey="key"
           loading={loading}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} thể loại`,
+            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} thành phố`,
           }}
           scroll={{ x: 'max-content' }}
         />
 
         <Modal
-          title={editingGenre ? 'Sửa thể loại' : 'Thêm thể loại mới'}
+          title={editingCity ? 'Sửa thành phố' : 'Thêm thành phố mới'}
           open={modalVisible}
           onCancel={() => setModalVisible(false)}
           footer={null}
@@ -215,13 +194,13 @@ const Genres = () => {
           >
             <Form.Item
               name="name"
-              label="Tên thể loại"
+              label="Tên thành phố"
               rules={[
-                { required: true, message: 'Vui lòng nhập tên thể loại!' },
-                { min: 2, message: 'Tên thể loại phải có ít nhất 2 ký tự!' }
+                { required: true, message: 'Vui lòng nhập tên thành phố!' },
+                { min: 2, message: 'Tên thành phố phải có ít nhất 2 ký tự!' }
               ]}
             >
-              <Input placeholder="Nhập tên thể loại" />
+              <Input placeholder="Nhập tên thành phố" />
             </Form.Item>
 
             <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
@@ -230,7 +209,7 @@ const Genres = () => {
                   Hủy
                 </Button>
                 <Button type="primary" htmlType="submit">
-                  {editingGenre ? 'Cập nhật' : 'Thêm'}
+                  {editingCity ? 'Cập nhật' : 'Thêm'}
                 </Button>
               </Space>
             </Form.Item>
@@ -238,29 +217,29 @@ const Genres = () => {
         </Modal>
 
         <Modal
-          title={detailGenre ? `Chi tiết thể loại: ${detailGenre.name}` : 'Chi tiết thể loại'}
+          title={detailCity ? `Chi tiết thành phố: ${detailCity.name}` : 'Chi tiết thành phố'}
           open={detailVisible}
           onCancel={() => setDetailVisible(false)}
           footer={null}
           destroyOnHidden
           width={600}
         >
-          {detailGenre && (
+          {detailCity && (
             <div>
-              <h2>{detailGenre.name}</h2>
-              <p><b>ID:</b> {detailGenre.id}</p>
-              <p><b>Ngày tạo:</b> {detailGenre.createdAt ? new Date(detailGenre.createdAt).toLocaleDateString('vi-VN') : '-'}</p>
-              <h3 style={{ marginTop: 24 }}>Danh sách phim thuộc thể loại này:</h3>
-              {loadingDetail ? (
-                <p>Đang tải...</p>
-              ) : moviesByGenre.length === 0 ? (
-                <p>Không có phim nào thuộc thể loại này.</p>
-              ) : (
-                <ul>
-                  {moviesByGenre.map((movie, idx) => (
-                    <li key={idx}><b>{movie.title}</b> ({movie.releaseDate ? (typeof movie.releaseDate === 'string' ? new Date(movie.releaseDate).getFullYear() : movie.releaseDate.getFullYear()) : 'N/A'})</li>
-                  ))}
-                </ul>
+              <h2>{detailCity.name}</h2>
+              <p><b>Số lượng rạp:</b> {detailCity.cinemaCount}</p>
+              {detailCity.cinemas && detailCity.cinemas.length > 0 && (
+                <div>
+                  <b>Danh sách rạp:</b>
+                  <ul>
+                    {detailCity.cinemas.map((cinema, idx) => (
+                      <li key={cinema.cinemaId || idx}>
+                        <b>{cinema.name}</b> - {cinema.address} <br />
+                        <span>Liên hệ: {cinema.contactInfo}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
           )}
@@ -270,4 +249,4 @@ const Genres = () => {
   );
 };
 
-export default Genres; 
+export default Cities; 

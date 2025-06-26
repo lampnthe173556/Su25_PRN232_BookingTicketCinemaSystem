@@ -4,6 +4,7 @@ export const API_ENDPOINTS = {
   MOVIES: '/Movie',
   GENRES: '/Genre',
   PERSONS: '/Person',
+  CITIES: '/City',
   AUTH: '/Auth',
   USERS: '/User'
 }; 

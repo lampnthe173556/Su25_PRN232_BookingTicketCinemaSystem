@@ -234,7 +234,7 @@ const Movies = () => {
             onClick={() => handleViewDetail(record)}
             size="small"
           >
-            Xem chi tiết
+            
           </Button>
           <Button
             type="primary"
@@ -242,7 +242,7 @@ const Movies = () => {
             onClick={() => handleEdit(record)}
             size="small"
           >
-            Sửa
+            
           </Button>
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa phim này?"
@@ -256,7 +256,7 @@ const Movies = () => {
               icon={<DeleteOutlined />}
               size="small"
             >
-              Xóa
+              
             </Button>
           </Popconfirm>
         </Space>

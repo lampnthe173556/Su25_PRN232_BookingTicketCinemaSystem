@@ -2,9 +2,11 @@ using Amazon.Runtime;
 using Amazon.S3;
 using BookingTicketSysten.Models;
 using BookingTicketSysten.Models.DTOs.StoreDTO;
+using BookingTicketSysten.Services.BookingServices;
 using BookingTicketSysten.Services.GenerService;
 using BookingTicketSysten.Services.MovieServices;
 using BookingTicketSysten.Services.PersonServices;
+using BookingTicketSysten.Services.ShowServices;
 using BookingTicketSysten.Services.StoreService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -56,6 +58,9 @@ namespace BookingTicketSysten
             builder.Services.AddScoped<IMovieService, MovieService>();
             builder.Services.AddScoped<IGenreService, GenreService>();
             builder.Services.AddScoped<IStorageService, R2StorageService>();
+
+            builder.Services.AddScoped<IShowService, ShowService>();
+            builder.Services.AddScoped<IBookingService, BookingService>();
 
             #endregion
 

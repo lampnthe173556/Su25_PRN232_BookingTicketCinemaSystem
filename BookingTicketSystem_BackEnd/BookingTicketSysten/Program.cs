@@ -10,6 +10,7 @@ using BookingTicketSysten.Services.CommentServices;
 using BookingTicketSysten.Services.GenerService;
 using BookingTicketSysten.Services.MovieServices;
 using BookingTicketSysten.Services.PersonServices;
+using BookingTicketSysten.Services.SeatServices;
 using BookingTicketSysten.Services.StoreService;
 using BookingTicketSysten.Services.VoteServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -68,6 +69,7 @@ namespace BookingTicketSysten
             builder.Services.AddScoped<ICommentService, CommentService>();
             builder.Services.AddScoped<ICinemaService, CinemaService>();
             builder.Services.AddScoped<ICinemaHallService, CinemaHallService>();
+            builder.Services.AddScoped<ISeatService, SeatService>();
 
 
 

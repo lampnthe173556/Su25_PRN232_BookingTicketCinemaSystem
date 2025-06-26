@@ -19,8 +19,10 @@ namespace BookingTicketSysten.Services.CinemaServices
                 .Include(c => c.CinemaHalls)
                 .Select(c => new CinemaDto
                 {
+                    CinemaId = c.CinemaId,
                     Name = c.Name,
                     Address = c.Address,
+                    CityId = c.CityId,
                     CityName = c.City.Name,
                     ContactInfo = c.ContactInfo,
                     CreatedAt = c.CreatedAt,
@@ -48,8 +50,10 @@ namespace BookingTicketSysten.Services.CinemaServices
                 .Where(c => c.CinemaId == id)
                 .Select(c => new CinemaDto
                 {
+                    CinemaId = c.CinemaId,
                     Name = c.Name,
                     Address = c.Address,
+                    CityId = c.CityId,
                     CityName = c.City.Name, 
                     ContactInfo = c.ContactInfo,
                     CreatedAt = c.CreatedAt,
@@ -69,13 +73,13 @@ namespace BookingTicketSysten.Services.CinemaServices
             return cinema;
         }
 
-        public async Task<string> CreateCinemaAsync(CinemaCreateUpdateDto dto)
+        public async Task<string> CreateCinemaAsync(CinemaCreateDto dto)
         {
-            var city = await _context.Cities
+            var cityExists = await _context.Cities
                 .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.Name.ToLower() == dto.CityName.Trim().ToLower());
+                .AnyAsync(c => c.CityId == dto.CityId);
 
-            if (city == null)
+            if (!cityExists)
             {
                 return "City does not exist.";
             }
@@ -84,9 +88,9 @@ namespace BookingTicketSysten.Services.CinemaServices
             {
                 Name = dto.Name.Trim(),
                 Address = dto.Address.Trim(),
-                CityId = city.CityId,
+                CityId = dto.CityId,
                 ContactInfo = dto.ContactInfo.Trim(),
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
             };
 
             _context.Cinemas.Add(cinema);
@@ -95,30 +99,24 @@ namespace BookingTicketSysten.Services.CinemaServices
             return "Cinema created successfully.";
         }
 
-        public async Task<string> UpdateCinemaAsync(int id, CinemaCreateUpdateDto dto)
+
+        public async Task<string> UpdateCinemaAsync(int id, CinemaUpdateDto dto)
         {
             var cinema = await _context.Cinemas.FindAsync(id);
 
             if (cinema == null)
                 return "Cinema not found.";
 
-            var city = await _context.Cities
-                .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.Name.ToLower() == dto.CityName.Trim().ToLower());
-
-            if (city == null)
-                return "City does not exist.";
-
             cinema.Name = dto.Name.Trim();
             cinema.Address = dto.Address.Trim();
-            cinema.CityId = city.CityId;
             cinema.ContactInfo = dto.ContactInfo.Trim();
-            cinema.ModifiedAt = DateTime.Now;
+            cinema.ModifiedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
             return "Cinema updated successfully.";
         }
+
 
         public async Task<string> DeleteCinemaAsync(int id)
         {

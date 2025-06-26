@@ -40,7 +40,7 @@ namespace BookingTicketSysten.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateCinema([FromBody] CinemaCreateUpdateDto dto)
+        public async Task<IActionResult> CreateCinema([FromBody] CinemaCreateDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -59,13 +59,15 @@ namespace BookingTicketSysten.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCinema(int id, [FromBody] CinemaCreateUpdateDto dto)
+        public async Task<IActionResult> UpdateCinema(int id, [FromBody] CinemaUpdateDto dto)
         {
             if (!ModelState.IsValid)
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors)
-                                              .Select(e => e.ErrorMessage)
-                                              .ToList();
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
                 return BadRequest(new { errors });
             }
 
@@ -76,6 +78,7 @@ namespace BookingTicketSysten.Controllers
 
             return NotFound(new { error = result });
         }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCinema(int id)

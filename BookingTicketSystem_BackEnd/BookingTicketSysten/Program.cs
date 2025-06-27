@@ -16,7 +16,9 @@ using BookingTicketSysten.Services.VoteServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using ProjectHouseWithLeaves.Helper.Email;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace BookingTicketSysten
 {
@@ -28,7 +30,12 @@ namespace BookingTicketSysten
 
             // Add services to the container.
             #region Database_Context
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                });
             builder.Services.AddDbContext<MovieTicketBookingSystemContext>(options =>
                  options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
             #endregion
@@ -81,7 +88,12 @@ namespace BookingTicketSysten
 
             #endregion
 
-
+            #region IConfiguration
+            builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+            #endregion
+            #region mapper
+            
+            #endregion
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

@@ -10,5 +10,6 @@ namespace BookingTicketSysten.Models.DTOs
         public string Biography { get; set; }
         public string Nationality { get; set; }
         public string PhotoUrl { get; set; }
+        public string Role { get; set; } // actor/director/both/none
     }
 } 

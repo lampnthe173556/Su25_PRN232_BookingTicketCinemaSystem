@@ -22,7 +22,10 @@ namespace BookingTicketSysten.Services.PersonServices
         }
         public async Task<IEnumerable<PersonDto>> GetAllAsync()
         {
-            var people = await _context.People.ToListAsync();
+            var people = await _context.People
+                .Include(p => p.MovieActors)
+                .Include(p => p.MovieDirectors)
+                .ToListAsync();
             return people.Select(p => new PersonDto
             {
                 PersonId = p.PersonId,
@@ -30,21 +33,45 @@ namespace BookingTicketSysten.Services.PersonServices
                 DateOfBirth = p.DateOfBirth,
                 Biography = p.Biography,
                 Nationality = p.Nationality,
-                PhotoUrl = p.PhotoUrl
+                PhotoUrl = p.PhotoUrl,
+                Role = p.MovieActors.Any() && p.MovieDirectors.Any() ? "both"
+                    : p.MovieActors.Any() ? "actor"
+                    : p.MovieDirectors.Any() ? "director" : "none"
             });
         }
-        public async Task<PersonDto?> GetByIdAsync(int id)
+        public async Task<PersonDetailDto?> GetByIdAsync(int id)
         {
-            var p = await _context.People.FindAsync(id);
+            var p = await _context.People
+                .Include(x => x.MovieActors).ThenInclude(ma => ma.Movie)
+                .Include(x => x.MovieDirectors).ThenInclude(md => md.Movie)
+                .FirstOrDefaultAsync(x => x.PersonId == id);
             if (p == null) return null;
-            return new PersonDto
+            var moviesAsActor = p.MovieActors.Select(ma => new PersonMovieRoleDto
+            {
+                MovieId = ma.MovieId,
+                MovieTitle = ma.Movie?.Title,
+                RoleName = ma.RoleName
+            }).ToList();
+            var moviesAsDirector = p.MovieDirectors.Select(md => new PersonMovieRoleDto
+            {
+                MovieId = md.MovieId,
+                MovieTitle = md.Movie?.Title,
+                RoleName = "Đạo diễn"
+            }).ToList();
+            var role = p.MovieActors.Any() && p.MovieDirectors.Any() ? "both"
+                : p.MovieActors.Any() ? "actor"
+                : p.MovieDirectors.Any() ? "director" : "none";
+            return new PersonDetailDto
             {
                 PersonId = p.PersonId,
                 Name = p.Name,
                 DateOfBirth = p.DateOfBirth,
                 Biography = p.Biography,
                 Nationality = p.Nationality,
-                PhotoUrl = p.PhotoUrl
+                PhotoUrl = p.PhotoUrl,
+                Role = role,
+                MoviesAsActor = moviesAsActor,
+                MoviesAsDirector = moviesAsDirector
             };
         }
         public async Task<PersonDto> CreateAsync(PersonCreateUpdateDto dto)
@@ -112,6 +139,42 @@ namespace BookingTicketSysten.Services.PersonServices
             _context.People.Remove(person);
             await _context.SaveChangesAsync();
             return true;
+        }
+        public async Task<IEnumerable<PersonDto>> GetAllActorsAsync()
+        {
+            var people = await _context.People
+                .Include(p => p.MovieActors)
+                .Include(p => p.MovieDirectors)
+                .Where(p => p.MovieActors.Any())
+                .ToListAsync();
+            return people.Select(p => new PersonDto
+            {
+                PersonId = p.PersonId,
+                Name = p.Name,
+                DateOfBirth = p.DateOfBirth,
+                Biography = p.Biography,
+                Nationality = p.Nationality,
+                PhotoUrl = p.PhotoUrl,
+                Role = p.MovieDirectors.Any() ? "both" : "actor"
+            });
+        }
+        public async Task<IEnumerable<PersonDto>> GetAllDirectorsAsync()
+        {
+            var people = await _context.People
+                .Include(p => p.MovieActors)
+                .Include(p => p.MovieDirectors)
+                .Where(p => p.MovieDirectors.Any())
+                .ToListAsync();
+            return people.Select(p => new PersonDto
+            {
+                PersonId = p.PersonId,
+                Name = p.Name,
+                DateOfBirth = p.DateOfBirth,
+                Biography = p.Biography,
+                Nationality = p.Nationality,
+                PhotoUrl = p.PhotoUrl,
+                Role = p.MovieActors.Any() ? "both" : "director"
+            });
         }
     }
 }

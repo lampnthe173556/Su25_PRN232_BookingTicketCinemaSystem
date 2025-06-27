@@ -1,8 +1,10 @@
-﻿namespace BookingTicketSysten.Models.DTOs.CinemaHallDTO
+﻿namespace BookingTicketSysten.Models.DTOs.CinemaHallDTOs
 {
     public class CinemaHallDto
     {
+        public int CinemaHallId { get; set; }
         public int CinemaId { get; set; }
+        public string CinemaName { get; set; }
 
         public string Name { get; set; }
 

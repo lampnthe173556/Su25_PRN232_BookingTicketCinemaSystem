@@ -6,8 +6,8 @@ namespace BookingTicketSysten.Services.CinemaServices
     {
         Task<List<CinemaDto>> GetAllCinemasWithHallsAsync();
         Task<CinemaDto?> GetCinemaByIdAsync(int id);
-        Task<string> CreateCinemaAsync(CinemaCreateUpdateDto dto);
-        Task<string> UpdateCinemaAsync(int id, CinemaCreateUpdateDto dto);
+        Task<string> CreateCinemaAsync(CinemaCreateDto dto);
+        Task<string> UpdateCinemaAsync(int id, CinemaUpdateDto dto);
         Task<string> DeleteCinemaAsync(int id);
         Task<List<CinemaDto>> SearchCinemaByNameAsync(string name);
     }

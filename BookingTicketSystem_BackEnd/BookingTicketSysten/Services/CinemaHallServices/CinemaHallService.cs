@@ -1,6 +1,6 @@
 ﻿
 using BookingTicketSysten.Models;
-using BookingTicketSysten.Models.DTOs.CinemaHallDTO;
+using BookingTicketSysten.Models.DTOs.CinemaHallDTOs;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -22,7 +22,9 @@ namespace BookingTicketSysten.Services.CinemaHallServices
                 .Include(h => h.Seats)
                 .Select(h => new CinemaHallDto
                 {
+                    CinemaHallId = h.HallId,
                     CinemaId = h.CinemaId,
+                    CinemaName = h.Cinema.Name,
                     Name = h.Name,
                     TotalSeats = h.TotalSeats,
                     CreatedAt = h.CreatedAt,
@@ -42,6 +44,7 @@ namespace BookingTicketSysten.Services.CinemaHallServices
         {
             var hall = await _context.CinemaHalls
                 .Include(h => h.Seats)
+                .Include(h => h.Cinema)
                 .FirstOrDefaultAsync(h => h.HallId == hallId);
 
             if (hall == null)
@@ -49,7 +52,9 @@ namespace BookingTicketSysten.Services.CinemaHallServices
 
             return new CinemaHallDto
             {
+                CinemaHallId = hall.HallId,
                 CinemaId = hall.CinemaId,
+                CinemaName = hall.Cinema.Name,
                 Name = hall.Name,
                 TotalSeats = hall.TotalSeats,
                 CreatedAt = hall.CreatedAt,
@@ -64,5 +69,72 @@ namespace BookingTicketSysten.Services.CinemaHallServices
             };
         }
 
+
+        public async Task<string> CreateCinemaHallAsync(CinemaHallCreateDto dto)
+        {
+            var cinema = await _context.Cinemas
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.CinemaId == dto.CinemaId);
+
+            if (cinema == null)
+                return "Cinema not found.";
+
+            var isDuplicate = await _context.CinemaHalls.AnyAsync(h =>
+                h.CinemaId == dto.CinemaId &&
+                h.Name.ToLower() == dto.Name.Trim().ToLower());
+
+            if (isDuplicate)
+                return $"Hall '{dto.Name}' already exists in cinema '{cinema.Name}'.";
+
+            var newHall = new CinemaHall
+            {
+                CinemaId = dto.CinemaId,
+                Name = dto.Name.Trim(),
+                TotalSeats = dto.TotalSeats,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.CinemaHalls.Add(newHall);
+            await _context.SaveChangesAsync();
+
+            return "Cinema hall created successfully.";
+        }
+
+
+
+        public async Task<string> UpdateCinemaHallBasicInfoAsync(int hallId, CinemaHallUpdateDto dto)
+        {
+            var hall = await _context.CinemaHalls.FirstOrDefaultAsync(h => h.HallId == hallId);
+            if (hall == null)
+                return "Cinema hall not found.";
+
+            hall.Name = dto.Name;
+            hall.TotalSeats = dto.TotalSeats;
+            hall.ModifiedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return "Cinema hall updated successfully.";
+        }
+
+        public async Task<string> DeleteCinemaHallAsync(int hallId)
+        {
+            var hall = await _context.CinemaHalls
+                .Include(h => h.Seats)
+                .FirstOrDefaultAsync(h => h.HallId == hallId);
+
+            if (hall == null)
+                return "Cinema hall not found.";
+
+            if (hall.Seats != null && hall.Seats.Any())
+            {
+                _context.Seats.RemoveRange(hall.Seats);
+            }
+
+            _context.CinemaHalls.Remove(hall);
+            await _context.SaveChangesAsync();
+
+            return "Cinema hall deleted successfully.";
+        }
     }
 }

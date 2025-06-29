@@ -36,4 +36,9 @@
         public string? Password { get; set; }
         public string? ConfirmPassword { get; set; }
     }
+    public class UserLogin
+    {
+        public string? Email {  set; get; }
+        public string? PasswordHash {  set; get; }
+    }
 }

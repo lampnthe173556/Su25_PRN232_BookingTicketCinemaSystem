@@ -16,6 +16,7 @@ namespace BookingTicketSysten.Controllers
         {
             _userService = userService;
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAllUserAsync()
         {
@@ -24,7 +25,7 @@ namespace BookingTicketSysten.Controllers
             {
                 return Ok(new
                 {
-                    Message = "Empty user"
+                    Message = "No users found"
                 });
             }
             return Ok(new
@@ -33,30 +34,33 @@ namespace BookingTicketSysten.Controllers
                 data = users
             });
         }
+
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromForm] UserCreateDTOs userCreateDTO)
         {
             var result = await _userService.CreateUserAsync(userCreateDTO);
             if (result == null)
             {
-                return BadRequest(new { message = "Email đã tồn tại" });
+                return BadRequest(new { message = "Email already exists" });
             }
-            return Ok(new { message = "Tạo tài khoản thành công" });
+            return Ok(new { message = "Account created successfully" });
         }
+
         [HttpPut("{email}")]
         public async Task<IActionResult> UpdateUserByEmail(string email, [FromForm] UserUpdateDTOs userUpdateDTO)
         {
             var result = await _userService.UpdateUserAsync(email, userUpdateDTO);
             if (result == null)
             {
-                return BadRequest(new { message = "Email Không tồn tại" });
+                return BadRequest(new { message = "Email not found" });
             }
             return Ok(new
             {
-                message = "Update thành công",
+                message = "Update successful",
                 data = userUpdateDTO
             });
         }
+
         [HttpGet("{email}")]
         public async Task<IActionResult> GetUserByEmail(string email)
         {
@@ -65,15 +69,16 @@ namespace BookingTicketSysten.Controllers
             {
                 return Ok(new
                 {
-                    Message = "Successfull",
+                    Message = "Success",
                     data = user
                 });
             }
             return Ok(new
             {
-                Message = "fail data not exits"
+                Message = "Failure - data not found"
             });
         }
+
         [HttpDelete("{email}")]
         public async Task<IActionResult> DeleteUserByEmail(string email)
         {
@@ -82,14 +87,15 @@ namespace BookingTicketSysten.Controllers
             {
                 return Ok(new
                 {
-                    Message = "Delete success"
+                    Message = "User deleted successfully"
                 });
             }
             return Ok(new
             {
-                Message = "Delete fail"
+                Message = "Failed to delete user"
             });
         }
+
         [HttpPost("update-password-forgetpassword")]
         public async Task<IActionResult> UpdatePasswordByEmail([FromBody] UpdatePasswordDTO updatePasswordDTO)
         {
@@ -97,45 +103,48 @@ namespace BookingTicketSysten.Controllers
             {
                 return BadRequest(new
                 {
-                    Message = "password and confirm password is not match"
+                    Message = "Password and confirm password do not match"
                 });
             }
             var result = await _userService.UpdatePasswordAsync(updatePasswordDTO.Email, updatePasswordDTO.Password);
             if (result == null)
             {
-                return BadRequest(new { message = "Email không tồn tại" });
+                return BadRequest(new { message = "Email not found" });
             }
             return Ok(new
             {
-                Message = "Update sucessfully"
+                Message = "Password updated successfully"
             });
         }
+
         [HttpPost("change-password-upadateprofile")]
         public async Task<IActionResult> ChangePasswordByEmail([FromBody] ChangePasswordDtos changePasswordDtos)
         {
             var user = await _userService.GetUserByEmailAsync(changePasswordDtos.Email);
             if (user == null)
             {
-                return BadRequest(new { message = "Email không tồn tại" });
+                return BadRequest(new { message = "Email not found" });
             }
 
             var passwordEnter = PasswordHassing.ComputeSha256Hash(changePasswordDtos.OldPassword);
             if (user.PasswordHash != passwordEnter)
             {
-                return BadRequest(new { message = "mật khẩu cũ không đúng" });
+                return BadRequest(new { message = "Incorrect old password" });
             }
+
             if (changePasswordDtos.Password != changePasswordDtos.ConfirmPassword)
             {
-                return BadRequest(new { message = "mật khẩu mới nhập không trùng" });
+                return BadRequest(new { message = "New password and confirm password do not match" });
             }
+
             var result = await _userService.UpdatePasswordAsync(changePasswordDtos.Email, changePasswordDtos.Password);
             if (result == null)
             {
-                return BadRequest(new { message = "Email không tồn tại" });
+                return BadRequest(new { message = "Email not found" });
             }
             return Ok(new
             {
-                Message = "Thay đổi mật thành công"
+                Message = "Password changed successfully"
             });
         }
     }

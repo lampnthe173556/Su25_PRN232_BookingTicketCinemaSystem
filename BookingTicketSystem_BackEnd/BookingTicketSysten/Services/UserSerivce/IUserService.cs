@@ -9,7 +9,7 @@ namespace BookingTicketSysten.Services.UserSerivce
         Task<User?> CreateUserAsync(UserCreateDTOs userCreateDTO);
         Task<UserDisplayDTOs?> UpdateUserAsync(string email, UserUpdateDTOs classDto);
         Task<bool> DeleteUserAsync(string email);
-        Task<UserDisplayDTOs?> GetUserByEmailAndPasswordAsync(string email, string password);
+        Task<User?> GetUserByEmailAndPasswordAsync(string email, string password);
         Task<User?> GetUserByEmailAsync(string email);
         Task<UserUpdateDTOs?> UpdatePasswordAsync(string email, string password);
     }

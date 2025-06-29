@@ -52,15 +52,15 @@ namespace BookingTicketSysten.Services.UserSerivce
             return userDisplay;
         }
 
-        public async Task<UserDisplayDTOs?> GetUserByEmailAndPasswordAsync(string email, string password)
+        public async Task<User?> GetUserByEmailAndPasswordAsync(string email, string password)
         {
-            var user = await _context.Users
+            var user = await _context.Users.Include(u => u.Role)
                 .SingleOrDefaultAsync(x => x.Email == email && x.PasswordHash == PasswordHassing.ComputeSha256Hash(password));
             if (user == null)
             {
                 return null;
             }
-            return _mapper.Map<UserDisplayDTOs>(user);
+            return user;
         }
 
         public async Task<User?> GetUserByEmailAsync(string email)

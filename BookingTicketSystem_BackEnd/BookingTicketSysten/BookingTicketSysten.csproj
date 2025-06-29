@@ -13,6 +13,10 @@
     <None Remove="Data\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="Data\MovieTicketBookingSystemContext.cs" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
 		<PackageReference Include="AWSSDK.S3" Version="4.0.1.7" />
@@ -32,11 +36,8 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\" />
 
     <Folder Include="Extensions\" />
-
-    <Folder Include="Helper\Mapper\" />
 
     <Folder Include="Services\AuthenService\" />
   </ItemGroup>

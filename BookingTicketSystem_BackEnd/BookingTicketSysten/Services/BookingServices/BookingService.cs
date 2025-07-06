@@ -1,0 +1,123 @@
+﻿using BookingTicketSysten.Models;
+using BookingTicketSysten.Models.DTOs.BookingDTOs;
+using Microsoft.EntityFrameworkCore;
+
+namespace BookingTicketSysten.Services.BookingServices
+{
+    public class BookingService : IBookingService
+    {
+        private readonly MovieTicketBookingSystemContext _context;
+
+        public BookingService(MovieTicketBookingSystemContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<IEnumerable<BookingDto>> GetAllBookingsAsync()
+        {
+            return await _context.Bookings
+                .Include(b => b.User)
+                .Include(b => b.Show).ThenInclude(s => s.Movie)
+                .Include(b => b.BookedSeats).ThenInclude(bs => bs.Seat)
+                .Select(b => new BookingDto
+                {
+                    BookingId = b.BookingId,
+                    UserName = b.User.Name,
+                    MovieTitle = b.Show.Movie.Title,
+                    ShowStartTime = b.Show.StartTime,
+                    NumberOfSeats = b.NumberOfSeats,
+                    TotalPrice = b.TotalPrice,
+                    Status = b.Status,
+                    Seats = b.BookedSeats.Select(bs => new SeatInfoDto
+                    {
+                        SeatId = bs.Seat.SeatId,
+                        RowNumber = bs.Seat.RowNumber,
+                        ColumnNumber = bs.Seat.ColumnNumber,
+                        SeatType = bs.Seat.SeatType
+                    }).ToList()
+                }).ToListAsync();
+        }
+
+        public async Task<BookingDto?> GetBookingByIdAsync(int id)
+        {
+            var b = await _context.Bookings
+                .Include(b => b.User)
+                .Include(b => b.Show).ThenInclude(s => s.Movie)
+                .Include(b => b.BookedSeats).ThenInclude(bs => bs.Seat)
+                .FirstOrDefaultAsync(b => b.BookingId == id);
+
+            if (b == null) return null;
+
+            return new BookingDto
+            {
+                BookingId = b.BookingId,
+                UserName = b.User.Name,
+                MovieTitle = b.Show.Movie.Title,
+                ShowStartTime = b.Show.StartTime,
+                NumberOfSeats = b.NumberOfSeats,
+                TotalPrice = b.TotalPrice,
+                Status = b.Status,
+                Seats = b.BookedSeats.Select(bs => new SeatInfoDto
+                {
+                    SeatId = bs.Seat.SeatId,
+                    RowNumber = bs.Seat.RowNumber,
+                    ColumnNumber = bs.Seat.ColumnNumber,
+                    SeatType = bs.Seat.SeatType
+                }).ToList()
+            };
+        }
+
+        public async Task<BookingDto?> CreateBookingAsync(CreateBookingDto dto)
+        {
+            var show = await _context.Shows.FindAsync(dto.ShowId);
+            if (show == null || dto.SeatIds.Count == 0) return null;
+
+            var booked = await _context.BookedSeats
+                .Where(bs => dto.SeatIds.Contains(bs.SeatId) && bs.ShowId == dto.ShowId)
+                .ToListAsync();
+            if (booked.Any()) return null;
+
+            var booking = new Booking
+            {
+                UserId = dto.UserId,
+                ShowId = dto.ShowId,
+                QrcodeData = dto.QrCodeData,
+                CreatedAt = DateTime.Now,
+                Status = "Confirmed",
+                NumberOfSeats = dto.SeatIds.Count,
+                TotalPrice = dto.SeatIds.Count * show.TicketPrice
+            };
+
+            _context.Bookings.Add(booking);
+            await _context.SaveChangesAsync();
+
+            foreach (var seatId in dto.SeatIds)
+            {
+                _context.BookedSeats.Add(new BookedSeat
+                {
+                    BookingId = booking.BookingId,
+                    SeatId = seatId,
+                    ShowId = dto.ShowId
+                });
+            }
+
+            await _context.SaveChangesAsync();
+            return await GetBookingByIdAsync(booking.BookingId);
+        }
+
+        public async Task<bool> CancelBookingAsync(int id)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.BookedSeats)
+                .FirstOrDefaultAsync(b => b.BookingId == id);
+            if (booking == null) return false;
+
+            booking.Status = "Cancelled";
+            booking.ModifiedAt = DateTime.Now;
+
+            _context.BookedSeats.RemoveRange(booking.BookedSeats);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+    }
+}

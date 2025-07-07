@@ -1,16 +1,32 @@
 import React from "react";
 import { Form, Input, Button, Card, Typography, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
+import authService from "../../services/auth";
 
 const { Title } = Typography;
 
 const Register = () => {
   const navigate = useNavigate();
-  const onFinish = (values) => {
-    // Giả lập đăng ký thành công
-    message.success("Đăng ký thành công!");
-    setTimeout(() => navigate("/login"), 1000);
+  const onFinish = async (values) => {
+    try {
+      const res = await authService.signUp({ name: values.name, email: values.email, password: values.password });
+      // Nếu có message là lỗi (email đã tồn tại, ...) thì báo lỗi
+      if (res && res.message && res.message !== "Đăng ký thành công") {
+        message.error(res.message);
+        return;
+      }
+      // Nếu message là đăng ký thành công
+      if (res && res.message === "Đăng ký thành công") {
+        message.success(res.message);
+        setTimeout(() => navigate("/login"), 1000);
+        return;
+      }
+      // Trường hợp khác (không xác định)
+      message.error("Đăng ký thất bại!");
+    } catch (err) {
+      const msg = err?.response?.data?.message || err.message || "Đăng ký thất bại!";
+      message.error(msg);
+    }
   };
 
   return (
@@ -59,6 +75,9 @@ const Register = () => {
         <Form.Item>
           <Button type="primary" htmlType="submit" block>Đăng ký</Button>
         </Form.Item>
+        <div style={{ textAlign: "center", marginBottom: 8 }}>
+          <Link to="/forgot-password">Quên mật khẩu?</Link>
+        </div>
         <div style={{ textAlign: "center" }}>
           Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
         </div>

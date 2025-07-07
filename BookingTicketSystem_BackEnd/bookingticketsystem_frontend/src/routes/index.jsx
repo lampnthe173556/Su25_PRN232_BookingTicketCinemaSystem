@@ -15,6 +15,7 @@ import Showtimes from "../pages/admin/Showtimes";
 import Cities from "../pages/admin/Cities";
 import AdminLayout from "../layouts/AdminLayout";
 import UserLayout from "../layouts/UserLayout";
+import ForgotPassword from "../pages/common/ForgotPassword";
 // Các page khác sẽ thêm sau
 
 const getUser = () => {
@@ -45,6 +46,7 @@ const AppRoutes = () => (
       <Route path="/movies/:id" element={<MovieDetail />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       {/* User routes */}
       <Route path="/booking" element={<PrivateRoute><Booking /></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />

@@ -5,6 +5,6 @@ export const API_ENDPOINTS = {
   GENRES: '/Genre',
   PERSONS: '/Person',
   CITIES: '/City',
-  AUTH: '/Auth',
+  AUTH: '/Authentication',
   USERS: '/User'
 }; 

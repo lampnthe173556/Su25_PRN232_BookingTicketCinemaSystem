@@ -25,14 +25,14 @@ const getUser = () => {
 
 const AdminRoute = ({ children }) => {
   const user = getUser();
-  if (!user || user.role !== "admin") return <Navigate to="/login" />;
+  if (!user || user.role?.toLowerCase() !== "admin") return <Navigate to="/login" />;
   return children;
 };
 
 const PrivateRoute = ({ children }) => {
   const user = getUser();
   const location = useLocation();
-  if (!user || user.role !== "user") {
+  if (!user || user.role?.toLowerCase() !== "customer") {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} />;
   }
   return children;

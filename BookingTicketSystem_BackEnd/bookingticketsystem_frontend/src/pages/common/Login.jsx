@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import authService from "../../services/auth";
 import { useAuth } from "../../hooks/useAuth";
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
+import { jwtDecode } from "jwt-decode";
 
 const { Title } = Typography;
 
@@ -26,10 +27,15 @@ const Login = () => {
       }
       // Nếu có token (res.data) => thành công
       if (res && res.data) {
-        login({ ...res, token: res.data });
+        const decoded = jwtDecode(res.data);
+        const userInfo = {
+          ...decoded,
+          token: res.data
+        };
+        login(userInfo);
         message.success("Đăng nhập thành công!");
         setTimeout(() => {
-          if (res.role === "admin") navigate("/admin");
+          if (userInfo.role?.toLowerCase() === "admin") navigate("/admin");
           else if (redirect) navigate(redirect);
           else navigate("/");
         }, 1000);
@@ -49,10 +55,15 @@ const Login = () => {
       const idToken = credentialResponse.credential;
       const res = await authService.loginWithGoogle(idToken);
       if (res && res.data) {
-        login({ ...res, token: res.data });
+        const decoded = jwtDecode(res.data);
+        const userInfo = {
+          ...decoded,
+          token: res.data
+        };
+        login(userInfo);
         message.success("Đăng nhập Google thành công!");
         setTimeout(() => {
-          if (res.role === "admin") navigate("/admin");
+          if (userInfo.role?.toLowerCase() === "admin") navigate("/admin");
           else if (redirect) navigate(redirect);
           else navigate("/");
         }, 1000);

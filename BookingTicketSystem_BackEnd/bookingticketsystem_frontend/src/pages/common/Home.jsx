@@ -1,109 +1,197 @@
-import React, { useState } from "react";
-import { Row, Col, Card, Input, Select } from "antd";
+import React, { useEffect, useState, useMemo } from "react";
+import { Row, Col, Card, Input, Select, Typography, Spin, Carousel, Tag, Button, Rate, Divider, Empty } from "antd";
 import { useNavigate } from "react-router-dom";
+import { movieService, genreService, movieFavoriteService } from "../../services";
+import Footer from "../../components/Footer";
+import MovieCard from "../../components/MovieCard";
+import { useAuth } from "../../hooks/useAuth";
 
 const { Option } = Select;
+const { Title } = Typography;
 
-const movies = [
-  {
-    id: 1,
-    title: "Avengers: Endgame",
-    poster: "https://image.tmdb.org/t/p/w500/ulzhLuWrPK07P1YkdWQLZnQh1JL.jpg",
-    description: "Biệt đội siêu anh hùng đối đầu Thanos để cứu vũ trụ.",
-    genre: "Hành động",
-    director: "Anthony Russo",
-    actor: "Robert Downey Jr.",
-  },
-  {
-    id: 2,
-    title: "Joker",
-    poster: "https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg",
-    description: "Câu chuyện về nguồn gốc của Joker - kẻ thù truyền kiếp của Batman.",
-    genre: "Tâm lý",
-    director: "Todd Phillips",
-    actor: "Joaquin Phoenix",
-  },
-];
-
-const genres = ["Tất cả", ...Array.from(new Set(movies.map(m => m.genre)))];
-const actors = ["Tất cả", ...Array.from(new Set(movies.map(m => m.actor)))];
-const directors = ["Tất cả", ...Array.from(new Set(movies.map(m => m.director)))];
+function getToday() {
+  return new Date().toISOString().split("T")[0];
+}
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [movies, setMovies] = useState([]);
+  const [genres, setGenres] = useState([]);
+  const [topMovies, setTopMovies] = useState([]);
   const [search, setSearch] = useState("");
-  const [genre, setGenre] = useState("Tất cả");
-  const [actor, setActor] = useState("Tất cả");
-  const [director, setDirector] = useState("Tất cả");
+  const [genre, setGenre] = useState("");
+  const [favoriteIds, setFavoriteIds] = useState([]);
+  const [loadingFavoriteId, setLoadingFavoriteId] = useState(null);
 
-  const filteredMovies = movies.filter((movie) => {
-    return (
-      movie.title.toLowerCase().includes(search.toLowerCase()) &&
-      (genre === "Tất cả" || movie.genre === genre) &&
-      (actor === "Tất cả" || movie.actor === actor) &&
-      (director === "Tất cả" || movie.director === director)
-    );
-  });
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      try {
+        const [movieList, genreList, topList] = await Promise.all([
+          movieService.getAll(),
+          genreService.getAll(),
+          movieFavoriteService.getTop(8)
+        ]);
+        setMovies(movieList);
+        setGenres(genreList);
+        setTopMovies(topList);
+        // Lấy danh sách phim yêu thích nếu đã đăng nhập
+        if (user) {
+          const favs = await movieFavoriteService.getFavoritesByUser(user.id);
+          setFavoriteIds(favs.map(f => f.movieId));
+        } else {
+          setFavoriteIds([]);
+        }
+      } catch (err) {
+        // Có thể show message lỗi ở đây
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [user]);
+
+  // Phân loại phim đang chiếu/sắp chiếu
+  const today = getToday();
+  const nowShowing = useMemo(() => movies.filter(m => m.releaseDate && m.releaseDate <= today), [movies, today]);
+  const comingSoon = useMemo(() => movies.filter(m => m.releaseDate && m.releaseDate > today), [movies, today]);
+
+  // Lọc phim theo tìm kiếm và thể loại
+  const filteredMovies = useMemo(() => {
+    return movies.filter(movie => {
+      const matchTitle = movie.title.toLowerCase().includes(search.toLowerCase());
+      const matchGenre = !genre || movie.genres.some(g => g.id === genre);
+      return matchTitle && matchGenre;
+    });
+  }, [movies, search, genre]);
+
+  // Banner: lấy 4 phim nổi bật (top yêu thích hoặc random)
+  const bannerMovies = topMovies.length > 0 ? topMovies.slice(0, 4) : movies.slice(0, 4);
+
+  const POSTER_HEIGHT = 320;
+  const CARD_WIDTH = 240;
+  const POSTER_PLACEHOLDER = '/default-poster.png'; // Đặt ảnh placeholder vào public nếu chưa có
+
+  // Xử lý toggle yêu thích
+  const handleToggleFavorite = async (movie) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    setLoadingFavoriteId(movie.id);
+    try {
+      if (favoriteIds.includes(movie.id)) {
+        await movieFavoriteService.removeFavorite(user.id, movie.id);
+        setFavoriteIds(favoriteIds.filter(id => id !== movie.id));
+      } else {
+        await movieFavoriteService.addFavorite(user.id, movie.id);
+        setFavoriteIds([...favoriteIds, movie.id]);
+      }
+    } catch (err) {
+      // Có thể show message lỗi ở đây
+    } finally {
+      setLoadingFavoriteId(null);
+    }
+  };
+
+  // Xử lý đặt vé
+  const handleBook = (movie) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    navigate(`/booking/${movie.id}`);
+  };
 
   return (
-    <div>
-      <h2>Danh sách phim</h2>
-      <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col xs={24} md={8}>
-          <Input.Search
-            placeholder="Tìm kiếm phim..."
-            allowClear
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </Col>
-        <Col xs={24} md={5}>
-          <Select
-            value={genre}
-            onChange={setGenre}
-            style={{ width: "100%" }}
-          >
-            {genres.map(g => <Option key={g} value={g}>{g}</Option>)}
-          </Select>
-        </Col>
-        <Col xs={24} md={5}>
-          <Select
-            value={actor}
-            onChange={setActor}
-            style={{ width: "100%" }}
-          >
-            {actors.map(a => <Option key={a} value={a}>{a}</Option>)}
-          </Select>
-        </Col>
-        <Col xs={24} md={6}>
-          <Select
-            value={director}
-            onChange={setDirector}
-            style={{ width: "100%" }}
-          >
-            {directors.map(d => <Option key={d} value={d}>{d}</Option>)}
-          </Select>
-        </Col>
-      </Row>
-      <Row gutter={[24, 24]}>
-        {filteredMovies.length === 0 ? (
-          <Col span={24} style={{ textAlign: "center" }}>
-            Không tìm thấy phim phù hợp.
-          </Col>
-        ) : (
-          filteredMovies.map((movie) => (
+    <div style={{ background: '#f5f5f5', minHeight: '100vh' }}>
+      {/* Banner/Slider */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 0' }}>
+        <Carousel autoplay dots>
+          {bannerMovies.map((movie, idx) => (
+            <div key={movie.id || idx} style={{ position: 'relative', height: 360, cursor: 'pointer' }} onClick={() => navigate(`/movies/${movie.id}`)}>
+              <img src={movie.posterUrl} alt={movie.title} style={{ width: '100%', height: 360, objectFit: 'cover', borderRadius: 12 }} />
+              <div style={{ position: 'absolute', left: 40, bottom: 40, color: '#fff', textShadow: '0 2px 8px #000', maxWidth: 600 }}>
+                <Title level={2} style={{ color: '#fff', marginBottom: 0 }}>{movie.title}</Title>
+                <div style={{ fontSize: 16 }}>{movie.description?.slice(0, 120)}...</div>
+                <div style={{ marginTop: 8 }}>
+                  {movie.genres?.map(g => <Tag key={g.id}>{g.name}</Tag>)}
+                  <Rate disabled value={movie.rating} count={5} style={{ marginLeft: 12 }} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </Carousel>
+      </div>
+
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 16px' }}>
+        {/* Top phim yêu thích */}
+        <Title level={3} style={{ marginTop: 24 }}>Top phim được yêu thích</Title>
+        <Row gutter={[24, 24]}>
+          {topMovies.length === 0 ? <Col span={24}><Empty description="Không có dữ liệu" /></Col> : topMovies.map(movie => (
             <Col xs={24} sm={12} md={8} lg={6} key={movie.id}>
-              <Card
-                hoverable
-                cover={<img alt={movie.title} src={movie.poster} style={{ height: 320, objectFit: "cover" }} />}
-                onClick={() => navigate(`/movies/${movie.id}`)}
-              >
-                <Card.Meta title={movie.title} description={movie.description} />
-              </Card>
+              <MovieCard movie={movie} navigate={navigate} POSTER_HEIGHT={POSTER_HEIGHT} CARD_WIDTH={CARD_WIDTH} POSTER_PLACEHOLDER={POSTER_PLACEHOLDER} isFavorite={favoriteIds.includes(movie.id)} loadingFavorite={loadingFavoriteId===movie.id} onToggleFavorite={handleToggleFavorite} onBook={handleBook} />
             </Col>
-          ))
-        )}
-      </Row>
+          ))}
+        </Row>
+
+        {/* Phim đang chiếu */}
+        <Divider orientation="left" style={{ marginTop: 40 }}>Phim đang chiếu</Divider>
+        <Row gutter={[24, 24]}>
+          {nowShowing.length === 0 ? <Col span={24}><Empty description="Không có phim đang chiếu" /></Col> : nowShowing.slice(0, 8).map(movie => (
+            <Col xs={24} sm={12} md={8} lg={6} key={movie.id}>
+              <MovieCard movie={movie} navigate={navigate} POSTER_HEIGHT={POSTER_HEIGHT} CARD_WIDTH={CARD_WIDTH} POSTER_PLACEHOLDER={POSTER_PLACEHOLDER} isFavorite={favoriteIds.includes(movie.id)} loadingFavorite={loadingFavoriteId===movie.id} onToggleFavorite={handleToggleFavorite} onBook={handleBook} />
+            </Col>
+          ))}
+        </Row>
+
+        {/* Phim sắp chiếu */}
+        <Divider orientation="left" style={{ marginTop: 40 }}>Phim sắp chiếu</Divider>
+        <Row gutter={[24, 24]}>
+          {comingSoon.length === 0 ? <Col span={24}><Empty description="Không có phim sắp chiếu" /></Col> : comingSoon.slice(0, 8).map(movie => (
+            <Col xs={24} sm={12} md={8} lg={6} key={movie.id}>
+              <MovieCard movie={movie} navigate={navigate} POSTER_HEIGHT={POSTER_HEIGHT} CARD_WIDTH={CARD_WIDTH} POSTER_PLACEHOLDER={POSTER_PLACEHOLDER} isFavorite={favoriteIds.includes(movie.id)} loadingFavorite={loadingFavoriteId===movie.id} onToggleFavorite={handleToggleFavorite} onBook={handleBook} />
+            </Col>
+          ))}
+        </Row>
+
+        {/* Tìm kiếm & filter thể loại */}
+        <Divider orientation="left" style={{ marginTop: 40 }}>Tất cả phim</Divider>
+        <Row gutter={16} style={{ marginBottom: 16 }}>
+          <Col xs={24} md={8}>
+            <Input.Search
+              placeholder="Tìm kiếm phim..."
+              allowClear
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </Col>
+          <Col xs={24} md={8}>
+            <Select
+              value={genre}
+              onChange={setGenre}
+              style={{ width: "100%" }}
+              allowClear
+              placeholder="Chọn thể loại"
+            >
+              <Option value="">Tất cả</Option>
+              {genres.map(g => <Option key={g.id} value={g.id}>{g.name}</Option>)}
+            </Select>
+          </Col>
+        </Row>
+        <Row gutter={[24, 24]}>
+          {loading ? <Col span={24} style={{ textAlign: 'center' }}><Spin size="large" /></Col> :
+            filteredMovies.length === 0 ? <Col span={24}><Empty description="Không tìm thấy phim phù hợp." /></Col> :
+              filteredMovies.map((movie) => (
+                <Col xs={24} sm={12} md={8} lg={6} key={movie.id}>
+                  <MovieCard movie={movie} navigate={navigate} POSTER_HEIGHT={POSTER_HEIGHT} CARD_WIDTH={CARD_WIDTH} POSTER_PLACEHOLDER={POSTER_PLACEHOLDER} isFavorite={favoriteIds.includes(movie.id)} loadingFavorite={loadingFavoriteId===movie.id} onToggleFavorite={handleToggleFavorite} onBook={handleBook} />
+                </Col>
+              ))}
+        </Row>
+      </div>
+    
     </div>
   );
 };

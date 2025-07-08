@@ -7,7 +7,7 @@ class AuthService {
       baseURL: `${API_BASE_URL}${API_ENDPOINTS.AUTH}`,
       headers: {
         'Content-Type': 'application/json',
-      },
+  },
     });
     this.userApi = axios.create({
       baseURL: `${API_BASE_URL}${API_ENDPOINTS.USERS}`,
@@ -73,7 +73,7 @@ class AuthService {
       return response.data;
     } catch (error) {
       throw this.handleError(error);
-    }
+  }
   }
 
   handleError(error) {

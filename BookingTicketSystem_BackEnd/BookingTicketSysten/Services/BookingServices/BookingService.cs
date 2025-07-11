@@ -119,5 +119,47 @@ namespace BookingTicketSysten.Services.BookingServices
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<IEnumerable<BookingDto>> GetBookingsByUserIdAsync(int userId)
+        {
+            return await _context.Bookings
+                .Where(b => b.UserId == userId)
+                .Include(b => b.User)
+                .Include(b => b.Show).ThenInclude(s => s.Movie)
+                .Include(b => b.BookedSeats).ThenInclude(bs => bs.Seat)
+                .Select(b => new BookingDto
+                {
+                    BookingId = b.BookingId,
+                    UserName = b.User.Name,
+                    MovieTitle = b.Show.Movie.Title,
+                    ShowStartTime = b.Show.StartTime,
+                    NumberOfSeats = b.NumberOfSeats,
+                    TotalPrice = b.TotalPrice,
+                    Status = b.Status,
+                    Seats = b.BookedSeats.Select(bs => new SeatInfoDto
+                    {
+                        SeatId = bs.Seat.SeatId,
+                        RowNumber = bs.Seat.RowNumber,
+                        ColumnNumber = bs.Seat.ColumnNumber,
+                        SeatType = bs.Seat.SeatType
+                    }).ToList()
+                }).ToListAsync();
+        }
+
+        public async Task<RevenueStatisticsDto> GetRevenueStatisticsAsync(DateTime? fromDate, DateTime? toDate)
+        {
+            var query = _context.Bookings.AsQueryable();
+            if (fromDate.HasValue)
+                query = query.Where(b => b.CreatedAt >= fromDate.Value);
+            if (toDate.HasValue)
+                query = query.Where(b => b.CreatedAt <= toDate.Value);
+            var totalRevenue = await query.Where(b => b.Status == "Confirmed").SumAsync(b => (decimal?)b.TotalPrice) ?? 0;
+            var totalBookings = await query.CountAsync();
+            return new RevenueStatisticsDto
+            {
+                TotalRevenue = totalRevenue,
+                TotalBookings = totalBookings
+            };
+        }
     }
 }

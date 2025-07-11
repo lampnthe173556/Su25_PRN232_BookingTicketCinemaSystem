@@ -96,5 +96,24 @@ namespace BookingTicketSysten.Services.ShowServices
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<IEnumerable<ShowDto>> GetShowsByMovieIdAsync(int movieId)
+        {
+            return await _context.Shows
+                .Include(s => s.Movie)
+                .Include(s => s.Hall)
+                .Where(s => s.MovieId == movieId)
+                .Select(s => new ShowDto
+                {
+                    ShowId = s.ShowId,
+                    MovieId = s.MovieId,
+                    MovieTitle = s.Movie.Title,
+                    HallId = s.HallId,
+                    HallName = s.Hall.Name,
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                    TicketPrice = s.TicketPrice
+                }).ToListAsync();
+        }
     }
 }

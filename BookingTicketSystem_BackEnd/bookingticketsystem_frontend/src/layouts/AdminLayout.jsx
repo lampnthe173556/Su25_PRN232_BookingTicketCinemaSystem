@@ -11,6 +11,12 @@ import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
   EnvironmentOutlined,
+  BankOutlined,
+  HomeOutlined,
+  CreditCardOutlined,
+  MessageOutlined,
+  OrderedListOutlined,
+  StarOutlined,
 } from "@ant-design/icons";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../styles/admin.css";
@@ -22,12 +28,19 @@ const SIDEBAR_COLLAPSED_WIDTH = 60;
 
 const menuItems = [
   { key: "dashboard", icon: <DashboardOutlined />, label: "Dashboard", link: "/admin" },
-  { key: "users", icon: <UserOutlined />, label: "Quản lý user", link: "/admin/users" },
+  { key: "users", icon: <UserOutlined />, label: "Quản lý người dùng", link: "/admin/users" },
   { key: "movies", icon: <VideoCameraOutlined />, label: "Quản lý phim", link: "/admin/movies" },
   { key: "genres", icon: <TagsOutlined />, label: "Quản lý thể loại", link: "/admin/genres" },
   { key: "cities", icon: <EnvironmentOutlined />, label: "Quản lý thành phố", link: "/admin/cities" },
-  { key: "actors", icon: <TeamOutlined />, label: "Quản lý actor/director", link: "/admin/actors" },
+  { key: "actors", icon: <TeamOutlined />, label: "Quản lý diễn viên", link: "/admin/actors" },
+  { key: "cinemas", icon: <BankOutlined />, label: "Quản lý rạp chiếu", link: "/admin/cinemas" },
+  { key: "cinemahalls", icon: <HomeOutlined />, label: "Quản lý phòng chiếu", link: "/admin/cinemahalls" },
   { key: "showtimes", icon: <CalendarOutlined />, label: "Quản lý suất chiếu", link: "/admin/showtimes" },
+  { key: "bookings", icon: <OrderedListOutlined />, label: "Quản lý đặt vé", link: "/admin/bookings" },
+  { key: "payments", icon: <CreditCardOutlined />, label: "Quản lý thanh toán", link: "/admin/payments" },
+  // { key: "comments", icon: <MessageOutlined />, label: "Quản lý bình luận", link: "/admin/comments" },
+  { key: "seats", icon: <OrderedListOutlined />, label: "Quản lý ghế ngồi", link: "/admin/seats" },
+  // { key: "votes", icon: <StarOutlined />, label: "Quản lý đánh giá", link: "/admin/votes" },
 ];
 
 const AdminLayout = ({ children }) => {
@@ -64,7 +77,7 @@ const AdminLayout = ({ children }) => {
         collapsed={collapsed}
         onCollapse={setCollapsed}
         className="admin-sidebar"
-        style={{ background: "#001529", left: 0, top: 0, bottom: 0, height: "100vh" }}
+        style={{ background: "#001529", left: 0, top: 0, bottom: 0, height: "100vh", overflowY: 'auto' }}
         trigger={null}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px 0 0 0' }}>

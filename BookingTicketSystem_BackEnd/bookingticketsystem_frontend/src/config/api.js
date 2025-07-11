@@ -1,4 +1,4 @@
-export const API_BASE_URL = import.meta.env.VITE_BASE_URL_API || 'https://localhost:7262/api';
+export const API_BASE_URL = import.meta.env.VITE_BASE_URL_API ;
 
 export const API_ENDPOINTS = {
   MOVIES: '/Movie',
@@ -6,5 +6,14 @@ export const API_ENDPOINTS = {
   PERSONS: '/Person',
   CITIES: '/City',
   AUTH: '/Authentication',
-  USERS: '/User'
+  USERS: '/User',
+  SHOWS: '/Show',
+  VOTES: '/Vote',
+  BOOKINGS: '/Booking',
+  CINEMAS: '/Cinema',
+  CINEMA_HALLS: '/CinemaHall',
+  PAYMENTS: '/Payment',
+  COMMENTS: '/Comment',
+  MOVIE_FAVORITES: '/MovieFavorite',
+  SEATS: '/Seat'
 }; 

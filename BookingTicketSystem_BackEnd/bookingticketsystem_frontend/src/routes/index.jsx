@@ -13,6 +13,13 @@ import Genres from "../pages/admin/Genres";
 import Actors from "../pages/admin/Actors";
 import Showtimes from "../pages/admin/Showtimes";
 import Cities from "../pages/admin/Cities";
+import Cinemas from "../pages/admin/Cinemas";
+import CinemaHalls from "../pages/admin/CinemaHalls";
+import Bookings from "../pages/admin/Bookings";
+import Payments from "../pages/admin/Payments";
+import Comments from "../pages/admin/Comments";
+import Seats from "../pages/admin/Seats";
+import Votes from "../pages/admin/Votes";
 import AdminLayout from "../layouts/AdminLayout";
 import UserLayout from "../layouts/UserLayout";
 import ForgotPassword from "../pages/common/ForgotPassword";
@@ -57,9 +64,15 @@ const AppRoutes = () => (
     <Route path="/admin/movies" element={<AdminRoute><AdminLayout><Movies /></AdminLayout></AdminRoute>} />
     <Route path="/admin/genres" element={<AdminRoute><AdminLayout><Genres /></AdminLayout></AdminRoute>} />
     <Route path="/admin/actors" element={<AdminRoute><AdminLayout><Actors /></AdminLayout></AdminRoute>} />
-    <Route path="/admin/showtimes" element={<AdminRoute><AdminLayout><Showtimes /></AdminLayout></AdminRoute>} />
     <Route path="/admin/cities" element={<AdminRoute><AdminLayout><Cities /></AdminLayout></AdminRoute>} />
-    {/* Các route khác sẽ thêm sau */}
+    <Route path="/admin/cinemas" element={<AdminRoute><AdminLayout><Cinemas /></AdminLayout></AdminRoute>} />
+    <Route path="/admin/cinemahalls" element={<AdminRoute><AdminLayout><CinemaHalls /></AdminLayout></AdminRoute>} />
+    <Route path="/admin/showtimes" element={<AdminRoute><AdminLayout><Showtimes /></AdminLayout></AdminRoute>} />
+    <Route path="/admin/bookings" element={<AdminRoute><AdminLayout><Bookings /></AdminLayout></AdminRoute>} />
+    <Route path="/admin/payments" element={<AdminRoute><AdminLayout><Payments /></AdminLayout></AdminRoute>} />
+    <Route path="/admin/comments" element={<AdminRoute><AdminLayout><Comments /></AdminLayout></AdminRoute>} />
+    <Route path="/admin/seats" element={<AdminRoute><AdminLayout><Seats /></AdminLayout></AdminRoute>} />
+    <Route path="/admin/votes" element={<AdminRoute><AdminLayout><Votes /></AdminLayout></AdminRoute>} />
   </Routes>
 );
 

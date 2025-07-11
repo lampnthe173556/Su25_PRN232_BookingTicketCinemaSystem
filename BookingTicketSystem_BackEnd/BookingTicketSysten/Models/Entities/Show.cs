@@ -22,7 +22,7 @@ public partial class Show
     public DateTime CreatedAt { get; set; }
 
     public DateTime? ModifiedAt { get; set; }
-
+    public DateOnly? ShowDate { get; set; }
     public virtual ICollection<BookedSeat> BookedSeats { get; set; } = new List<BookedSeat>();
 
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();

@@ -20,7 +20,7 @@ namespace BookingTicketSysten.Services.UserSerivce
         {
             var userExist = await _context.Users
                .SingleOrDefaultAsync(x => x.Email == userCreateDTO.Email);
-            if(userExist != null)
+            if (userExist != null)
             {
                 return null;
             }
@@ -66,6 +66,7 @@ namespace BookingTicketSysten.Services.UserSerivce
         public async Task<User?> GetUserByEmailAsync(string email)
         {
             var user = await _context.Users
+               .Include(u => u.Role)
                .SingleOrDefaultAsync(x => x.Email == email);
             if (user == null)
             {

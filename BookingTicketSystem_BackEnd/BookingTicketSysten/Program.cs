@@ -4,6 +4,11 @@ using BookingTicketSysten.Extensions;
 using BookingTicketSysten.Middleware;
 using BookingTicketSysten.Models;
 using BookingTicketSysten.Models.DTOs.StoreDTO;
+using BookingTicketSysten.Services.BookingServices;
+using BookingTicketSysten.Services.GenerService;
+using BookingTicketSysten.Services.MovieServices;
+using BookingTicketSysten.Services.PersonServices;
+using BookingTicketSysten.Services.ShowServices;
 using BookingTicketSysten.Services.CinemaHallServices;
 using BookingTicketSysten.Services.CinemaServices;
 using BookingTicketSysten.Services.CommentServices;
@@ -86,6 +91,9 @@ namespace BookingTicketSysten
             builder.Services.AddPaymentServices();
             // Add City Services
             builder.Services.AddCityServices();
+
+            builder.Services.AddScoped<IShowService, ShowService>();
+            builder.Services.AddScoped<IBookingService, BookingService>();
 
             #endregion
 

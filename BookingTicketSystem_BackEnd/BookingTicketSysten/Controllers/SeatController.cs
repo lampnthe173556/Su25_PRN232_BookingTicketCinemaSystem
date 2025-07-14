@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BookingTicketSysten.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     [ApiController]
     public class SeatController : ControllerBase
     {
@@ -51,7 +51,7 @@ namespace BookingTicketSysten.Controllers
             return BadRequest(new { error = result });
         }
 
-        [HttpPut("seats/{seatId}")]
+        [HttpPut("{seatId}")]
         public async Task<IActionResult> UpdateSeat(int seatId, [FromBody] SeatUpdateDto dto)
         {
             var result = await _seatService.UpdateSeatAsync(seatId, dto);
@@ -63,7 +63,7 @@ namespace BookingTicketSysten.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("seats/{seatId}")]
+        [HttpDelete("{seatId}")]
         public async Task<IActionResult> DeleteSeat(int seatId)
         {
             var result = await _seatService.DeleteSeatAsync(seatId);

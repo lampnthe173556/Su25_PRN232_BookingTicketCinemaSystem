@@ -26,6 +26,13 @@ namespace BookingTicketSysten.Controllers
             return show == null ? NotFound() : Ok(show);
         }
 
+        [HttpGet("by-movie/{movieId}")]
+        public async Task<IActionResult> GetByMovieId(int movieId)
+        {
+            var shows = await _showService.GetShowsByMovieIdAsync(movieId);
+            return Ok(shows);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateShowDto dto)
         {

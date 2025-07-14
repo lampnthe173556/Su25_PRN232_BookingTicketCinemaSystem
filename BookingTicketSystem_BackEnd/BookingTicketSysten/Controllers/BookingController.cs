@@ -1,5 +1,4 @@
-﻿using BookingTicketSysten.Models;
-using BookingTicketSysten.Models.DTOs.BookingDTOs;
+﻿using BookingTicketSysten.Models.DTOs.BookingDTOs;
 using BookingTicketSysten.Services.BookingServices;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,6 +23,20 @@ namespace BookingTicketSysten.Controllers
         {
             var booking = await _bookingService.GetBookingByIdAsync(id);
             return booking == null ? NotFound() : Ok(booking);
+        }
+
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetByUserId(int userId)
+        {
+            var bookings = await _bookingService.GetBookingsByUserIdAsync(userId);
+            return Ok(bookings);
+        }
+
+        [HttpGet("revenue")]
+        public async Task<IActionResult> GetRevenueStatistics([FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate)
+        {
+            var stats = await _bookingService.GetRevenueStatisticsAsync(fromDate, toDate);
+            return Ok(stats);
         }
 
         [HttpPost]

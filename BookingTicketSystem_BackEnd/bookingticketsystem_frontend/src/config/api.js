@@ -10,10 +10,10 @@ export const API_ENDPOINTS = {
   SHOWS: '/Show',
   VOTES: '/Vote',
   BOOKINGS: '/Booking',
-  CINEMAS: '/Cinema',
-  CINEMA_HALLS: '/CinemaHall',
+  CINEMAS: '/admin/Cinema',
+  CINEMA_HALLS: '/admin/CinemaHall',
   PAYMENTS: '/Payment',
   COMMENTS: '/Comment',
   MOVIE_FAVORITES: '/MovieFavorite',
-  SEATS: '/Seat'
+  SEATS: '/admin/Seat'
 }; 

@@ -1,46 +1,33 @@
 export class Movie {
   constructor(data = {}) {
-    this.id = data.id || data.movieId || null;
+    this.movieId = data.movieId || null;
     this.title = data.title || '';
     this.description = data.description || '';
     this.duration = data.duration || 0;
     this.language = data.language || '';
     this.releaseDate = data.releaseDate || null;
     this.trailerUrl = data.trailerUrl || '';
-    this.rating = data.rating || 0;
     this.posterUrl = data.posterUrl || '';
-    this.genres = data.genres || [];
-    this.actors = data.actors || [];
-    this.directors = data.directors || [];
-    this.createdAt = data.createdAt || null;
-    this.updatedAt = data.updatedAt || null;
+    this.rating = data.rating || 0;
+    this.Genres = data.Genres || [];
+    this.Actors = data.Actors || [];
+    this.Directors = data.Directors || [];
   }
 
   static fromApi(data) {
     return new Movie({
-      id: data.movieId || data.id,
+      movieId: data.movieId || data.id,
       title: data.title,
       description: data.description,
       duration: data.duration,
       language: data.language,
       releaseDate: data.releaseDate,
       trailerUrl: data.trailerUrl,
-      rating: data.rating,
       posterUrl: data.posterUrl,
-      genres: data.genres?.map(genre => ({
-        ...genre,
-        id: genre.genreId || genre.id
-      })) || [],
-      actors: data.actors?.map(actor => ({
-        ...actor,
-        id: actor.personId || actor.id
-      })) || [],
-      directors: data.directors?.map(director => ({
-        ...director,
-        id: director.personId || director.id
-      })) || [],
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt
+      rating: data.rating,
+      Genres: data.genres || [],
+      Actors: data.actors || [],
+      Directors: data.directors || []
     });
   }
 
@@ -52,10 +39,11 @@ export class Movie {
       Language: this.language,
       ReleaseDate: this.releaseDate ? (typeof this.releaseDate === 'string' ? this.releaseDate : this.releaseDate.toISOString().split('T')[0]) : '',
       TrailerUrl: this.trailerUrl,
+      PosterUrl: this.posterUrl,
       Rating: this.rating,
-      GenreIds: this.genres.map(g => g.id).filter(id => id !== null && id !== undefined),
-      ActorIds: this.actors.map(a => a.id).filter(id => id !== null && id !== undefined),
-      DirectorIds: this.directors.map(d => d.id).filter(id => id !== null && id !== undefined)
+      GenreIds: this.Genres.map(g => g.genreId).filter(id => id !== null && id !== undefined),
+      ActorIds: this.Actors.map(a => a.personId).filter(id => id !== null && id !== undefined),
+      DirectorIds: this.Directors.map(d => d.personId).filter(id => id !== null && id !== undefined)
     };
   }
 } 

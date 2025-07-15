@@ -152,8 +152,8 @@ const Users = () => {
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: 'userId',
+      key: 'userId',
       width: 80,
     },
     {
@@ -280,8 +280,8 @@ const Users = () => {
 
         <Table
           columns={columns}
-          dataSource={users.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
-          rowKey="key"
+          dataSource={users.map((item, idx) => ({ ...item, key: item.userId ?? `row-${idx}` }))}
+          rowKey="userId"
           loading={loading}
           pagination={{
             pageSize: 10,

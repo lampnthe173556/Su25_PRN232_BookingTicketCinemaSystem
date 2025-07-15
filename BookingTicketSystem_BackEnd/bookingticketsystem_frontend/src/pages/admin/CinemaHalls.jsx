@@ -44,8 +44,7 @@ const CinemaHalls = () => {
         cinemaHallService.getAll(),
         cinemaService.getAll(),
       ]);
-      
-      setCinemaHalls(hallsData);
+      setCinemaHalls(hallsData.map(CinemaHall.fromApi));
       setCinemas(cinemasData);
     } catch (error) {
       Toast.error('Không thể tải dữ liệu: ' + error.message);
@@ -64,8 +63,8 @@ const CinemaHalls = () => {
     setEditingHall(record);
     form.setFieldsValue({
       name: record.name,
-      capacity: record.capacity,
-      cinemaId: record.cinemaId
+      cinemaId: record.cinemaId,
+      totalSeats: record.totalSeats
     });
     setModalVisible(true);
   };
@@ -89,7 +88,7 @@ const CinemaHalls = () => {
       const hallData = new CinemaHall(values);
       
       if (editingHall) {
-        await cinemaHallService.update(editingHall.id, hallData.toUpdateDto());
+        await cinemaHallService.update(editingHall.cinemaHallId, hallData.toUpdateDto());
         Toast.success('Cập nhật phòng chiếu thành công');
       } else {
         await cinemaHallService.create(hallData.toCreateDto());
@@ -111,8 +110,8 @@ const CinemaHalls = () => {
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: 'cinemaHallId',
+      key: 'cinemaHallId',
       width: 80,
     },
     {
@@ -123,31 +122,17 @@ const CinemaHalls = () => {
     },
     {
       title: 'Rạp chiếu',
-      dataIndex: 'cinema',
-      key: 'cinema',
+      dataIndex: 'cinemaName',
+      key: 'cinemaName',
       width: 200,
-      render: (cinema) => cinema ? cinema.name : '-',
+      render: (_, record) => record.cinemaName || '-',
     },
     {
       title: 'Sức chứa',
-      dataIndex: 'capacity',
-      key: 'capacity',
+      dataIndex: 'totalSeats',
+      key: 'totalSeats',
       width: 100,
-      render: (capacity) => `${capacity} ghế`,
-    },
-    {
-      title: 'Số ghế',
-      dataIndex: 'seats',
-      key: 'seats',
-      width: 100,
-      render: (seats) => seats ? seats.length : 0,
-    },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      width: 120,
-      render: (date) => date ? new Date(date).toLocaleDateString('vi-VN') : '-',
+      render: (totalSeats) => `${totalSeats} ghế`,
     },
     {
       title: 'Thao tác',
@@ -173,7 +158,7 @@ const CinemaHalls = () => {
           </Button>
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa phòng chiếu này?"
-            onConfirm={() => handleDelete(record.id)}
+            onConfirm={() => handleDelete(record.cinemaHallId)}
             okText="Có"
             cancelText="Không"
           >
@@ -207,8 +192,8 @@ const CinemaHalls = () => {
 
         <Table
           columns={columns}
-          dataSource={cinemaHalls.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
-          rowKey="key"
+          dataSource={cinemaHalls.map((item, idx) => ({ ...item, key: item.cinemaHallId ?? `row-${idx}` }))}
+          rowKey="cinemaHallId"
           loading={loading}
           pagination={{
             pageSize: 10,
@@ -243,7 +228,6 @@ const CinemaHalls = () => {
             >
               <Input placeholder="Nhập tên phòng chiếu" />
             </Form.Item>
-
             <Form.Item
               name="cinemaId"
               label="Rạp chiếu"
@@ -253,29 +237,22 @@ const CinemaHalls = () => {
             >
               <Select placeholder="Chọn rạp chiếu">
                 {cinemas.map(cinema => (
-                  <Option key={cinema.id} value={cinema.id}>
+                  <Option key={cinema.cinemaId} value={cinema.cinemaId}>
                     {cinema.name}
                   </Option>
                 ))}
               </Select>
             </Form.Item>
-
             <Form.Item
-              name="capacity"
+              name="totalSeats"
               label="Sức chứa"
               rules={[
                 { required: true, message: 'Vui lòng nhập sức chứa!' },
                 { type: 'number', min: 1, message: 'Sức chứa phải lớn hơn 0!' }
               ]}
             >
-              <InputNumber
-                placeholder="Nhập sức chứa"
-                min={1}
-                max={1000}
-                style={{ width: '100%' }}
-              />
+              <InputNumber min={1} placeholder="Nhập sức chứa" style={{ width: '100%' }} />
             </Form.Item>
-
             <Form.Item>
               <Space>
                 <Button type="primary" htmlType="submit">
@@ -299,16 +276,13 @@ const CinemaHalls = () => {
               Đóng
             </Button>
           ]}
-          width={600}
+          width={500}
         >
           {detailHall && (
             <div>
               <p><strong>Tên phòng:</strong> {detailHall.name}</p>
-              <p><strong>Rạp chiếu:</strong> {detailHall.cinema?.name || '-'}</p>
-              <p><strong>Sức chứa:</strong> {detailHall.capacity} ghế</p>
-              <p><strong>Số ghế:</strong> {detailHall.seats?.length || 0}</p>
-              <p><strong>Ngày tạo:</strong> {detailHall.createdAt ? new Date(detailHall.createdAt).toLocaleDateString('vi-VN') : '-'}</p>
-              <p><strong>Cập nhật lần cuối:</strong> {detailHall.updatedAt ? new Date(detailHall.updatedAt).toLocaleDateString('vi-VN') : '-'}</p>
+              <p><strong>Rạp chiếu:</strong> {detailHall.cinemaName || '-'}</p>
+              <p><strong>Sức chứa:</strong> {detailHall.totalSeats} ghế</p>
             </div>
           )}
         </Modal>

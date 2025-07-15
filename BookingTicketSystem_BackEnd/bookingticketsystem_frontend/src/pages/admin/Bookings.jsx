@@ -15,6 +15,7 @@ import { EyeOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import bookingService from '../../services/bookingService';
 import Toast from '../../components/Toast';
 import '../../styles/admin.css';
+import { Booking } from '../../models/Booking';
 
 const { Title } = Typography;
 
@@ -25,16 +26,16 @@ const Bookings = () => {
   const [detailBooking, setDetailBooking] = useState(null);
 
   useEffect(() => {
-    loadBookings();
+    loadData();
   }, []);
 
-  const loadBookings = async () => {
+  const loadData = async () => {
     setLoading(true);
     try {
-      const data = await bookingService.getAll();
-      setBookings(data);
+      const bookingsData = await bookingService.getAll();
+      setBookings(bookingsData.map(Booking.fromApi));
     } catch (error) {
-      Toast.error('Không thể tải danh sách đặt vé: ' + error.message);
+      Toast.error('Không thể tải dữ liệu: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -48,7 +49,7 @@ const Bookings = () => {
     try {
       await bookingService.cancel(id);
       Toast.success('Hủy đặt vé thành công');
-      loadBookings();
+      loadData();
     } catch (error) {
       Toast.error('Không thể hủy đặt vé: ' + error.message);
     }
@@ -82,58 +83,44 @@ const Bookings = () => {
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: 'bookingId',
+      key: 'bookingId',
       width: 80,
     },
     {
       title: 'Người dùng',
-      dataIndex: 'user',
-      key: 'user',
+      dataIndex: 'userName',
+      key: 'userName',
       width: 150,
-      render: (user) => user ? user.name : '-',
+      render: (userName) => userName || '-',
     },
     {
       title: 'Phim',
-      dataIndex: 'show',
-      key: 'show',
+      dataIndex: 'movieTitle',
+      key: 'movieTitle',
       width: 200,
-      render: (show) => show?.movie ? show.movie.title : '-',
-    },
-    {
-      title: 'Phòng chiếu',
-      dataIndex: 'show',
-      key: 'cinemaHall',
-      width: 150,
-      render: (show) => show?.cinemaHall ? show.cinemaHall.name : '-',
-    },
-    {
-      title: 'Ngày chiếu',
-      dataIndex: 'show',
-      key: 'date',
-      width: 120,
-      render: (show) => show?.date ? new Date(show.date).toLocaleDateString('vi-VN') : '-',
+      render: (movieTitle) => movieTitle || '-',
     },
     {
       title: 'Giờ chiếu',
-      dataIndex: 'show',
-      key: 'startTime',
-      width: 100,
-      render: (show) => show?.startTime || '-',
+      dataIndex: 'showStartTime',
+      key: 'showStartTime',
+      width: 120,
+      render: (showStartTime) => showStartTime || '-',
     },
     {
       title: 'Số ghế',
-      dataIndex: 'seats',
-      key: 'seats',
+      dataIndex: 'numberOfSeats',
+      key: 'numberOfSeats',
       width: 100,
-      render: (seats) => seats ? seats.length : 0,
+      render: (numberOfSeats) => numberOfSeats || 0,
     },
     {
       title: 'Tổng tiền',
-      dataIndex: 'totalAmount',
-      key: 'totalAmount',
+      dataIndex: 'totalPrice',
+      key: 'totalPrice',
       width: 120,
-      render: (amount) => amount ? `${amount.toLocaleString()} VNĐ` : '-',
+      render: (totalPrice) => totalPrice ? `${totalPrice.toLocaleString()} VNĐ` : '-',
     },
     {
       title: 'Trạng thái',
@@ -145,13 +132,6 @@ const Bookings = () => {
           {getStatusText(status)}
         </Tag>
       ),
-    },
-    {
-      title: 'Ngày đặt',
-      dataIndex: 'bookingDate',
-      key: 'bookingDate',
-      width: 120,
-      render: (date) => date ? new Date(date).toLocaleDateString('vi-VN') : '-',
     },
     {
       title: 'Thao tác',
@@ -170,7 +150,7 @@ const Bookings = () => {
           {record.status === 'pending' && (
             <Popconfirm
               title="Bạn có chắc chắn muốn hủy đặt vé này?"
-              onConfirm={() => handleCancel(record.id)}
+              onConfirm={() => handleCancel(record.bookingId)}
               okText="Có"
               cancelText="Không"
             >
@@ -198,8 +178,8 @@ const Bookings = () => {
 
         <Table
           columns={columns}
-          dataSource={bookings.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
-          rowKey="key"
+          dataSource={bookings.map((item, idx) => ({ ...item, key: item.bookingId ?? `row-${idx}` }))}
+          rowKey="bookingId"
           loading={loading}
           pagination={{
             pageSize: 10,
@@ -220,64 +200,18 @@ const Bookings = () => {
               Đóng
             </Button>
           ]}
-          width={800}
+          width={600}
         >
           {detailBooking && (
-            <Descriptions bordered column={2}>
-              <Descriptions.Item label="ID đặt vé" span={2}>
-                {detailBooking.id}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Người dùng">
-                {detailBooking.user?.name || '-'}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Email">
-                {detailBooking.user?.email || '-'}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Phim" span={2}>
-                {detailBooking.show?.movie?.title || '-'}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Phòng chiếu">
-                {detailBooking.show?.cinemaHall?.name || '-'}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Ngày chiếu">
-                {detailBooking.show?.date ? new Date(detailBooking.show.date).toLocaleDateString('vi-VN') : '-'}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Giờ bắt đầu">
-                {detailBooking.show?.startTime || '-'}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Giờ kết thúc">
-                {detailBooking.show?.endTime || '-'}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Số ghế" span={2}>
-                {detailBooking.seats?.map(seat => `${seat.rowNumber}${seat.seatNumber}`).join(', ') || '-'}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Tổng tiền">
-                {detailBooking.totalAmount ? `${detailBooking.totalAmount.toLocaleString()} VNĐ` : '-'}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Trạng thái">
-                <Tag color={getStatusColor(detailBooking.status)}>
-                  {getStatusText(detailBooking.status)}
-                </Tag>
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Ngày đặt" span={2}>
-                {detailBooking.bookingDate ? new Date(detailBooking.bookingDate).toLocaleString('vi-VN') : '-'}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Ngày tạo" span={2}>
-                {detailBooking.createdAt ? new Date(detailBooking.createdAt).toLocaleString('vi-VN') : '-'}
-              </Descriptions.Item>
-            </Descriptions>
+            <div>
+              <p><strong>ID đặt vé:</strong> {detailBooking.bookingId}</p>
+              <p><strong>Người dùng:</strong> {detailBooking.userName || '-'}</p>
+              <p><strong>Phim:</strong> {detailBooking.movieTitle || '-'}</p>
+              <p><strong>Giờ chiếu:</strong> {detailBooking.showStartTime || '-'}</p>
+              <p><strong>Số ghế:</strong> {detailBooking.numberOfSeats || 0}</p>
+              <p><strong>Tổng tiền:</strong> {detailBooking.totalPrice ? `${detailBooking.totalPrice.toLocaleString()} VNĐ` : '-'}</p>
+              <p><strong>Trạng thái:</strong> {getStatusText(detailBooking.status)}</p>
+            </div>
           )}
         </Modal>
       </Card>

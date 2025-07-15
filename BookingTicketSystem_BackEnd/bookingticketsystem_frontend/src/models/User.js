@@ -1,31 +1,23 @@
 export class User {
   constructor(data = {}) {
-    this.id = data.id || null;
     this.name = data.name || '';
     this.email = data.email || '';
     this.phone = data.phone || '';
-    this.address = data.address || '';
-    this.dateOfBirth = data.dateOfBirth || null;
-    this.gender = data.gender || '';
-    this.role = data.role || 'user';
-    this.isActive = data.isActive !== undefined ? data.isActive : true;
+    this.loyaltyPoints = data.loyaltyPoints || 0;
     this.createdAt = data.createdAt || null;
-    this.updatedAt = data.updatedAt || null;
+    this.modifiedAt = data.modifiedAt || null;
+    this.isActive = data.isActive !== undefined ? data.isActive : true;
   }
 
   static fromApi(data) {
     return new User({
-      id: data.userId || data.id,
       name: data.name,
       email: data.email,
       phone: data.phone,
-      address: data.address,
-      dateOfBirth: data.dateOfBirth,
-      gender: data.gender,
-      role: data.role,
-      isActive: data.isActive,
+      loyaltyPoints: data.loyaltyPoints,
       createdAt: data.createdAt,
-      updatedAt: data.updatedAt
+      modifiedAt: data.modifiedAt,
+      isActive: data.isActive
     });
   }
 
@@ -33,23 +25,14 @@ export class User {
     return {
       name: this.name,
       email: this.email,
-      phone: this.phone,
-      address: this.address,
-      dateOfBirth: this.dateOfBirth,
-      gender: this.gender,
-      role: this.role
+      phone: this.phone
     };
   }
 
   toUpdateDto() {
     return {
       name: this.name,
-      email: this.email,
-      phone: this.phone,
-      address: this.address,
-      dateOfBirth: this.dateOfBirth,
-      gender: this.gender,
-      role: this.role
+      phone: this.phone
     };
   }
 } 

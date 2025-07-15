@@ -87,9 +87,9 @@ const Movies = () => {
       releaseDate: record.releaseDate ? dayjs(record.releaseDate) : null,
       trailerUrl: record.trailerUrl,
       rating: record.rating,
-      genreIds: (record.genres?.map(g => g.id).filter(id => id !== null && id !== undefined)) || [],
-      actorIds: (record.actors?.map(a => a.id).filter(id => id !== null && id !== undefined)) || [],
-      directorIds: (record.directors?.map(d => d.id).filter(id => id !== null && id !== undefined)) || []
+      genreIds: (record.Genres?.map(g => g.genreId).filter(id => id !== null && id !== undefined)) || [],
+      actorIds: (record.Actors?.map(a => a.personId).filter(id => id !== null && id !== undefined)) || [],
+      directorIds: (record.Directors?.map(d => d.personId).filter(id => id !== null && id !== undefined)) || []
     });
     setModalVisible(true);
   };
@@ -113,13 +113,13 @@ const Movies = () => {
       const movieData = new Movie({
         ...values,
         releaseDate: values.releaseDate ? values.releaseDate.toISOString().split('T')[0] : null,
-        genres: values.genreIds?.map(id => genres.find(g => g.id === id)) || [],
-        actors: values.actorIds?.map(id => persons.find(a => a.id === id)) || [],
-        directors: values.directorIds?.map(id => persons.find(d => d.id === id)) || []
+        Genres: values.genreIds?.map(id => genres.find(g => g.genreId === id)) || [],
+        Actors: values.actorIds?.map(id => persons.find(a => a.personId === id)) || [],
+        Directors: values.directorIds?.map(id => persons.find(d => d.personId === id)) || []
       });
       
       if (editingMovie) {
-        await movieService.update(editingMovie.id, movieData, posterFile);
+        await movieService.update(editingMovie.movieId, movieData, posterFile);
         Toast.success('Cập nhật phim thành công');
       } else {
         await movieService.create(movieData, posterFile);
@@ -165,8 +165,8 @@ const Movies = () => {
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: 'movieId',
+      key: 'movieId',
       width: 80,
     },
     {
@@ -246,7 +246,7 @@ const Movies = () => {
           </Button>
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa phim này?"
-            onConfirm={() => handleDelete(record.id)}
+            onConfirm={() => handleDelete(record.movieId)}
             okText="Có"
             cancelText="Không"
           >
@@ -256,7 +256,7 @@ const Movies = () => {
               icon={<DeleteOutlined />}
               size="small"
             >
-              
+                
             </Button>
           </Popconfirm>
         </Space>
@@ -280,8 +280,8 @@ const Movies = () => {
 
         <Table
           columns={columns}
-          dataSource={movies.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
-          rowKey="key"
+          dataSource={movies.map((item, idx) => ({ ...item, key: item.movieId ?? `row-${idx}` }))}
+          rowKey="movieId"
           loading={loading}
           pagination={{
             pageSize: 10,
@@ -422,8 +422,8 @@ const Movies = () => {
                       (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
                     }
                   >
-                    {genres.filter(g => g.id !== null && g.id !== undefined).map((genre, idx) => (
-                      <Option key={genre.id} value={genre.id}>{genre.name}</Option>
+                    {genres.filter(g => g.genreId !== null && g.genreId !== undefined).map((genre, idx) => (
+                      <Option key={genre.genreId} value={genre.genreId}>{genre.name}</Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -442,8 +442,8 @@ const Movies = () => {
                       (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
                     }
                   >
-                    {persons.filter(a => a.id !== null && a.id !== undefined).map((person, idx) => (
-                      <Option key={person.id} value={person.id}>{person.name}</Option>
+                    {persons.filter(a => a.personId !== null && a.personId !== undefined).map((person, idx) => (
+                      <Option key={person.personId} value={person.personId}>{person.name}</Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -462,8 +462,8 @@ const Movies = () => {
                       (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
                     }
                   >
-                    {persons.filter(d => d.id !== null && d.id !== undefined).map((person, idx) => (
-                      <Option key={person.id} value={person.id}>{person.name}</Option>
+                    {persons.filter(d => d.personId !== null && d.personId !== undefined).map((person, idx) => (
+                      <Option key={person.personId} value={person.personId}>{person.name}</Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -545,9 +545,9 @@ const Movies = () => {
                 <p><b>Ngôn ngữ:</b> {detailMovie.language}</p>
                 <p><b>Ngày phát hành:</b> {detailMovie.releaseDate ? (typeof detailMovie.releaseDate === 'string' ? new Date(detailMovie.releaseDate).toLocaleDateString('vi-VN') : detailMovie.releaseDate.toLocaleDateString('vi-VN')) : '-'}</p>
                 <p><b>Điểm đánh giá:</b> {detailMovie.rating ? `${detailMovie.rating}/10` : '-'}</p>
-                <p><b>Thể loại:</b> {detailMovie.genres?.map((g, idx) => <Tag key={idx}>{g.name}</Tag>)}</p>
-                <p><b>Diễn viên:</b> {detailMovie.actors?.map((a, idx) => <Tag key={idx}>{a.name}</Tag>)}</p>
-                <p><b>Đạo diễn:</b> {detailMovie.directors?.map((d, idx) => <Tag key={idx}>{d.name}</Tag>)}</p>
+                <p><b>Thể loại:</b> {detailMovie.Genres?.map((g, idx) => <Tag key={idx}>{g.name}</Tag>)}</p>
+                <p><b>Diễn viên:</b> {detailMovie.Actors?.map((a, idx) => <Tag key={idx}>{a.name}</Tag>)}</p>
+                <p><b>Đạo diễn:</b> {detailMovie.Directors?.map((d, idx) => <Tag key={idx}>{d.name}</Tag>)}</p>
                 {detailMovie.trailerUrl && (
                   <p><b>Trailer:</b> <a href={detailMovie.trailerUrl} target="_blank" rel="noopener noreferrer">Xem trailer</a></p>
                 )}

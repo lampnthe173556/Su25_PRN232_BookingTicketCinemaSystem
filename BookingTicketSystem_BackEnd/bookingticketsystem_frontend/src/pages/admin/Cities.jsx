@@ -75,7 +75,7 @@ const Cities = () => {
     try {
       const cityData = new City(values);
       if (editingCity) {
-        await cityService.update(editingCity.id, cityData);
+        await cityService.update(editingCity.cityId, cityData);
         Toast.success('Cập nhật thành phố thành công');
       } else {
         await cityService.create(cityData);
@@ -96,8 +96,8 @@ const Cities = () => {
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: 'cityId',
+      key: 'cityId',
       width: 80,
     },
     {
@@ -134,7 +134,7 @@ const Cities = () => {
           </Button>
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa thành phố này?"
-            onConfirm={() => handleDelete(record.id)}
+            onConfirm={() => handleDelete(record.cityId)}
             okText="Có"
             cancelText="Không"
           >
@@ -168,8 +168,8 @@ const Cities = () => {
 
         <Table
           columns={columns}
-          dataSource={cities.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
-          rowKey="key"
+          dataSource={cities.map((item, idx) => ({ ...item, key: item.cityId ?? `row-${idx}` }))}
+          rowKey="cityId"
           loading={loading}
           pagination={{
             pageSize: 10,

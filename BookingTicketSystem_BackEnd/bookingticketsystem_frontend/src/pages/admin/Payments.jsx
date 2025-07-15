@@ -15,6 +15,7 @@ import { EyeOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-desi
 import paymentService from '../../services/paymentService';
 import Toast from '../../components/Toast';
 import '../../styles/admin.css';
+import { Payment } from '../../models/Payment';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -35,10 +36,10 @@ const Payments = () => {
   const loadPayments = async () => {
     setLoading(true);
     try {
-      const data = await paymentService.getAll();
-      setPayments(data);
+      const paymentsData = await paymentService.getAll();
+      setPayments(paymentsData.map(Payment.fromApi));
     } catch (error) {
-      Toast.error('Không thể tải danh sách thanh toán: ' + error.message);
+      Toast.error('Không thể tải dữ liệu: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -105,8 +106,8 @@ const Payments = () => {
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: 'paymentId',
+      key: 'paymentId',
       width: 80,
     },
     {
@@ -131,8 +132,8 @@ const Payments = () => {
     },
     {
       title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
+      dataIndex: 'paymentStatus',
+      key: 'paymentStatus',
       width: 120,
       render: (status) => (
         <Tag color={getStatusColor(status)}>
@@ -148,9 +149,9 @@ const Payments = () => {
       render: (id) => id || '-',
     },
     {
-      title: 'Ngày thanh toán',
-      dataIndex: 'paymentDate',
-      key: 'paymentDate',
+      title: 'Ngày tạo',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
       width: 120,
       render: (date) => date ? new Date(date).toLocaleDateString('vi-VN') : '-',
     },
@@ -168,14 +169,6 @@ const Payments = () => {
           >
             Xem
           </Button>
-          <Button
-            type="primary"
-            icon={<CheckCircleOutlined />}
-            onClick={() => handleUpdateStatus(record)}
-            size="small"
-          >
-            Cập nhật
-          </Button>
         </Space>
       ),
     },
@@ -190,8 +183,8 @@ const Payments = () => {
 
         <Table
           columns={columns}
-          dataSource={payments.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
-          rowKey="key"
+          dataSource={payments.map((item, idx) => ({ ...item, key: item.paymentId ?? `row-${idx}` }))}
+          rowKey="paymentId"
           loading={loading}
           pagination={{
             pageSize: 10,
@@ -212,44 +205,18 @@ const Payments = () => {
               Đóng
             </Button>
           ]}
-          width={800}
+          width={600}
         >
           {detailPayment && (
-            <Descriptions bordered column={2}>
-              <Descriptions.Item label="ID thanh toán" span={2}>
-                {detailPayment.id}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="ID đặt vé">
-                {detailPayment.bookingId}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Số tiền">
-                {detailPayment.amount ? `${detailPayment.amount.toLocaleString()} VNĐ` : '-'}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Phương thức thanh toán">
-                {getPaymentMethodText(detailPayment.paymentMethod)}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Trạng thái">
-                <Tag color={getStatusColor(detailPayment.status)}>
-                  {getStatusText(detailPayment.status)}
-                </Tag>
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Mã giao dịch" span={2}>
-                {detailPayment.transactionId || 'Không có'}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Ngày thanh toán" span={2}>
-                {detailPayment.paymentDate ? new Date(detailPayment.paymentDate).toLocaleString('vi-VN') : '-'}
-              </Descriptions.Item>
-              
-              <Descriptions.Item label="Ngày tạo" span={2}>
-                {detailPayment.createdAt ? new Date(detailPayment.createdAt).toLocaleString('vi-VN') : '-'}
-              </Descriptions.Item>
-            </Descriptions>
+            <div>
+              <p><strong>ID thanh toán:</strong> {detailPayment.paymentId}</p>
+              <p><strong>ID đặt vé:</strong> {detailPayment.bookingId}</p>
+              <p><strong>Số tiền:</strong> {detailPayment.amount ? `${detailPayment.amount.toLocaleString()} VNĐ` : '-'}</p>
+              <p><strong>Phương thức:</strong> {getPaymentMethodText(detailPayment.paymentMethod)}</p>
+              <p><strong>Trạng thái:</strong> {getStatusText(detailPayment.paymentStatus)}</p>
+              <p><strong>Mã giao dịch:</strong> {detailPayment.transactionId || '-'}</p>
+              <p><strong>Ngày tạo:</strong> {detailPayment.createdAt ? new Date(detailPayment.createdAt).toLocaleDateString('vi-VN') : '-'}</p>
+            </div>
           )}
         </Modal>
 

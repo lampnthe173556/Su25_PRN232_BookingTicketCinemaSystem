@@ -1,31 +1,29 @@
 export class Cinema {
   constructor(data = {}) {
-    this.id = data.id || null;
+    this.cinemaId = data.cinemaId || null;
     this.name = data.name || '';
     this.address = data.address || '';
-    this.phone = data.phone || '';
-    this.email = data.email || '';
-    this.description = data.description || '';
     this.cityId = data.cityId || null;
-    this.city = data.city || null;
-    this.cinemaHalls = data.cinemaHalls || [];
+    this.cityName = data.cityName || '';
+    this.contactInfo = data.contactInfo || '';
     this.createdAt = data.createdAt || null;
-    this.updatedAt = data.updatedAt || null;
+    this.modifiedAt = data.modifiedAt || null;
+    this.cinemaHallCount = data.cinemaHallCount || 0;
+    this.cinemaHall = data.cinemaHall || [];
   }
 
   static fromApi(data) {
     return new Cinema({
-      id: data.cinemaId || data.id,
+      cinemaId: data.cinemaId || data.id,
       name: data.name,
       address: data.address,
-      phone: data.phone,
-      email: data.email,
-      description: data.description,
       cityId: data.cityId,
-      city: data.city ? { id: data.city.cityId, name: data.city.name } : null,
-      cinemaHalls: data.cinemaHalls || [],
+      cityName: data.cityName,
+      contactInfo: data.contactInfo,
       createdAt: data.createdAt,
-      updatedAt: data.updatedAt
+      modifiedAt: data.modifiedAt,
+      cinemaHallCount: data.cinemaHallCount,
+      cinemaHall: data.cinemaHall || []
     });
   }
 
@@ -33,10 +31,8 @@ export class Cinema {
     return {
       name: this.name,
       address: this.address,
-      phone: this.phone,
-      email: this.email,
-      description: this.description,
-      cityId: this.cityId
+      cityId: this.cityId,
+      contactInfo: this.contactInfo
     };
   }
 
@@ -44,10 +40,8 @@ export class Cinema {
     return {
       name: this.name,
       address: this.address,
-      phone: this.phone,
-      email: this.email,
-      description: this.description,
-      cityId: this.cityId
+      cityId: this.cityId,
+      contactInfo: this.contactInfo
     };
   }
 } 

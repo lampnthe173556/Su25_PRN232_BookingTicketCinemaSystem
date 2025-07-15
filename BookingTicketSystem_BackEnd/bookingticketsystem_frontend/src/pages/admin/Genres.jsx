@@ -82,7 +82,7 @@ const Genres = () => {
       const genreData = new Genre(values);
       
       if (editingGenre) {
-        await genreService.update(editingGenre.id, genreData);
+        await genreService.update(editingGenre.genreId, genreData);
         Toast.success('Cập nhật thể loại thành công');
       } else {
         await genreService.create(genreData);
@@ -101,9 +101,9 @@ const Genres = () => {
     setDetailGenre(record);
     setDetailVisible(true);
     setLoadingDetail(true);
-    if (record.id !== null && record.id !== undefined) {
+    if (record.genreId !== null && record.genreId !== undefined) {
       try {
-        const movies = await movieService.getByGenre(record.id);
+        const movies = await movieService.getByGenre(record.genreId);
         setMoviesByGenre(movies);
       } catch (error) {
         setMoviesByGenre([]);
@@ -117,8 +117,8 @@ const Genres = () => {
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: 'genreId',
+      key: 'genreId',
       width: 80,
     },
     {
@@ -155,7 +155,7 @@ const Genres = () => {
           </Button>
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa thể loại này?"
-            onConfirm={() => handleDelete(record.id)}
+            onConfirm={() => handleDelete(record.genreId)}
             okText="Có"
             cancelText="Không"
           >
@@ -189,8 +189,8 @@ const Genres = () => {
 
         <Table
           columns={columns}
-          dataSource={genres.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
-          rowKey="key"
+          dataSource={genres.map((item, idx) => ({ ...item, key: item.genreId ?? `row-${idx}` }))}
+          rowKey="genreId"
           loading={loading}
           pagination={{
             pageSize: 10,
@@ -248,7 +248,7 @@ const Genres = () => {
           {detailGenre && (
             <div>
               <h2>{detailGenre.name}</h2>
-              <p><b>ID:</b> {detailGenre.id}</p>
+              <p><b>ID:</b> {detailGenre.genreId}</p>
               <p><b>Ngày tạo:</b> {detailGenre.createdAt ? new Date(detailGenre.createdAt).toLocaleDateString('vi-VN') : '-'}</p>
               <h3 style={{ marginTop: 24 }}>Danh sách phim thuộc thể loại này:</h3>
               {loadingDetail ? (

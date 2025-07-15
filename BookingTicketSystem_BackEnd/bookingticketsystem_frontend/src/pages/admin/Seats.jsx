@@ -44,8 +44,7 @@ const Seats = () => {
         seatService.getAll(),
         cinemaHallService.getAll(),
       ]);
-      
-      setSeats(seatsData);
+      setSeats(seatsData.map(Seat.fromApi));
       setCinemaHalls(hallsData);
     } catch (error) {
       Toast.error('Không thể tải dữ liệu: ' + error.message);
@@ -64,11 +63,9 @@ const Seats = () => {
     setEditingSeat(record);
     form.setFieldsValue({
       rowNumber: record.rowNumber,
-      seatNumber: record.seatNumber,
-      cinemaHallId: record.cinemaHallId,
-      seatType: record.seatType,
-      price: record.price,
-      isAvailable: record.isAvailable
+      columnNumber: record.columnNumber,
+      hallId: record.hallId,
+      seatType: record.seatType
     });
     setModalVisible(true);
   };
@@ -92,7 +89,7 @@ const Seats = () => {
       const seatData = new Seat(values);
       
       if (editingSeat) {
-        await seatService.update(editingSeat.id, seatData.toUpdateDto());
+        await seatService.update(editingSeat.seatId, seatData.toUpdateDto());
         Toast.success('Cập nhật ghế thành công');
       } else {
         await seatService.create(seatData.toCreateDto());
@@ -134,8 +131,8 @@ const Seats = () => {
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: 'seatId',
+      key: 'seatId',
       width: 80,
     },
     {
@@ -146,16 +143,19 @@ const Seats = () => {
     },
     {
       title: 'Số ghế',
-      dataIndex: 'seatNumber',
-      key: 'seatNumber',
+      dataIndex: 'columnNumber',
+      key: 'columnNumber',
       width: 100,
     },
     {
       title: 'Phòng chiếu',
-      dataIndex: 'cinemaHall',
-      key: 'cinemaHall',
+      dataIndex: 'hallId',
+      key: 'hallId',
       width: 150,
-      render: (hall) => hall ? hall.name : '-',
+      render: (hallId) => {
+        const hall = cinemaHalls.find(h => h.cinemaHallId === hallId);
+        return hall ? hall.name : '-';
+      },
     },
     {
       title: 'Loại ghế',
@@ -167,31 +167,6 @@ const Seats = () => {
           {getSeatTypeText(type)}
         </Tag>
       ),
-    },
-    {
-      title: 'Giá vé',
-      dataIndex: 'price',
-      key: 'price',
-      width: 120,
-      render: (price) => price ? `${price.toLocaleString()} VNĐ` : '-',
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'isAvailable',
-      key: 'isAvailable',
-      width: 100,
-      render: (isAvailable) => (
-        <Tag color={isAvailable ? 'green' : 'red'}>
-          {isAvailable ? 'Có sẵn' : 'Đã đặt'}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      width: 120,
-      render: (date) => date ? new Date(date).toLocaleDateString('vi-VN') : '-',
     },
     {
       title: 'Thao tác',
@@ -217,7 +192,7 @@ const Seats = () => {
           </Button>
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa ghế này?"
-            onConfirm={() => handleDelete(record.id)}
+            onConfirm={() => handleDelete(record.seatId)}
             okText="Có"
             cancelText="Không"
           >
@@ -251,8 +226,8 @@ const Seats = () => {
 
         <Table
           columns={columns}
-          dataSource={seats.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
-          rowKey="key"
+          dataSource={seats.map((item, idx) => ({ ...item, key: item.seatId ?? `row-${idx}` }))}
+          rowKey="seatId"
           loading={loading}
           pagination={{
             pageSize: 10,
@@ -260,7 +235,7 @@ const Seats = () => {
             showQuickJumper: true,
             showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} ghế`,
           }}
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1000 }}
         />
 
         {/* Modal thêm/sửa ghế */}
@@ -278,7 +253,26 @@ const Seats = () => {
             onFinish={handleSubmit}
           >
             <Form.Item
-              name="cinemaHallId"
+              name="rowNumber"
+              label="Hàng"
+              rules={[
+                { required: true, message: 'Vui lòng nhập hàng!' }
+              ]}
+            >
+              <Input placeholder="Nhập hàng" />
+            </Form.Item>
+            <Form.Item
+              name="columnNumber"
+              label="Số ghế"
+              rules={[
+                { required: true, message: 'Vui lòng nhập số ghế!' },
+                { type: 'number', min: 1, message: 'Số ghế phải lớn hơn 0!' }
+              ]}
+            >
+              <InputNumber min={1} placeholder="Nhập số ghế" style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item
+              name="hallId"
               label="Phòng chiếu"
               rules={[
                 { required: true, message: 'Vui lòng chọn phòng chiếu!' }
@@ -286,40 +280,12 @@ const Seats = () => {
             >
               <Select placeholder="Chọn phòng chiếu">
                 {cinemaHalls.map(hall => (
-                  <Option key={hall.id} value={hall.id}>
+                  <Option key={hall.cinemaHallId} value={hall.cinemaHallId}>
                     {hall.name}
                   </Option>
                 ))}
               </Select>
             </Form.Item>
-
-            <Form.Item
-              name="rowNumber"
-              label="Hàng"
-              rules={[
-                { required: true, message: 'Vui lòng nhập hàng!' },
-                { pattern: /^[A-Z]$/, message: 'Hàng phải là một chữ cái in hoa!' }
-              ]}
-            >
-              <Input placeholder="Nhập hàng (A, B, C...)" maxLength={1} />
-            </Form.Item>
-
-            <Form.Item
-              name="seatNumber"
-              label="Số ghế"
-              rules={[
-                { required: true, message: 'Vui lòng nhập số ghế!' },
-                { type: 'number', min: 1, message: 'Số ghế phải lớn hơn 0!' }
-              ]}
-            >
-              <InputNumber
-                placeholder="Nhập số ghế"
-                min={1}
-                max={99}
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-
             <Form.Item
               name="seatType"
               label="Loại ghế"
@@ -334,37 +300,6 @@ const Seats = () => {
                 <Option value="disabled">Khuyết tật</Option>
               </Select>
             </Form.Item>
-
-            <Form.Item
-              name="price"
-              label="Giá vé (VNĐ)"
-              rules={[
-                { required: true, message: 'Vui lòng nhập giá vé!' },
-                { type: 'number', min: 0, message: 'Giá vé phải lớn hơn hoặc bằng 0!' }
-              ]}
-            >
-              <InputNumber
-                placeholder="Nhập giá vé"
-                min={0}
-                style={{ width: '100%' }}
-                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={value => value.replace(/\$\s?|(,*)/g, '')}
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="isAvailable"
-              label="Trạng thái"
-              rules={[
-                { required: true, message: 'Vui lòng chọn trạng thái!' }
-              ]}
-            >
-              <Select placeholder="Chọn trạng thái">
-                <Option value={true}>Có sẵn</Option>
-                <Option value={false}>Đã đặt</Option>
-              </Select>
-            </Form.Item>
-
             <Form.Item>
               <Space>
                 <Button type="primary" htmlType="submit">
@@ -388,18 +323,17 @@ const Seats = () => {
               Đóng
             </Button>
           ]}
-          width={600}
+          width={500}
         >
           {detailSeat && (
             <div>
-              <p><strong>ID ghế:</strong> {detailSeat.id}</p>
-              <p><strong>Vị trí:</strong> {detailSeat.rowNumber}{detailSeat.seatNumber}</p>
-              <p><strong>Phòng chiếu:</strong> {detailSeat.cinemaHall?.name || '-'}</p>
-              <p><strong>Loại ghế:</strong> <Tag color={getSeatTypeColor(detailSeat.seatType)}>{getSeatTypeText(detailSeat.seatType)}</Tag></p>
-              <p><strong>Giá vé:</strong> {detailSeat.price ? `${detailSeat.price.toLocaleString()} VNĐ` : '-'}</p>
-              <p><strong>Trạng thái:</strong> <Tag color={detailSeat.isAvailable ? 'green' : 'red'}>{detailSeat.isAvailable ? 'Có sẵn' : 'Đã đặt'}</Tag></p>
-              <p><strong>Ngày tạo:</strong> {detailSeat.createdAt ? new Date(detailSeat.createdAt).toLocaleDateString('vi-VN') : '-'}</p>
-              <p><strong>Cập nhật lần cuối:</strong> {detailSeat.updatedAt ? new Date(detailSeat.updatedAt).toLocaleDateString('vi-VN') : '-'}</p>
+              <p><strong>Hàng:</strong> {detailSeat.rowNumber}</p>
+              <p><strong>Số ghế:</strong> {detailSeat.columnNumber}</p>
+              <p><strong>Phòng chiếu:</strong> {(() => {
+                const hall = cinemaHalls.find(h => h.cinemaHallId === detailSeat.hallId);
+                return hall ? hall.name : '-';
+              })()}</p>
+              <p><strong>Loại ghế:</strong> {getSeatTypeText(detailSeat.seatType)}</p>
             </div>
           )}
         </Modal>

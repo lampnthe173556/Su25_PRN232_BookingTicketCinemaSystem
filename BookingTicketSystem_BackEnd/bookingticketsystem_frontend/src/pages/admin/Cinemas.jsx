@@ -46,8 +46,7 @@ const Cinemas = () => {
         cinemaService.getAll(),
         cityService.getAll(),
       ]);
-      
-      setCinemas(cinemasData);
+      setCinemas(cinemasData.map(Cinema.fromApi));
       setCities(citiesData);
     } catch (error) {
       Toast.error('Không thể tải dữ liệu: ' + error.message);
@@ -67,9 +66,7 @@ const Cinemas = () => {
     form.setFieldsValue({
       name: record.name,
       address: record.address,
-      phone: record.phone,
-      email: record.email,
-      description: record.description,
+      contactInfo: record.contactInfo,
       cityId: record.cityId
     });
     setModalVisible(true);
@@ -94,7 +91,7 @@ const Cinemas = () => {
       const cinemaData = new Cinema(values);
       
       if (editingCinema) {
-        await cinemaService.update(editingCinema.id, cinemaData.toUpdateDto());
+        await cinemaService.update(editingCinema.cinemaId, cinemaData.toUpdateDto());
         Toast.success('Cập nhật rạp chiếu thành công');
       } else {
         await cinemaService.create(cinemaData.toCreateDto());
@@ -133,8 +130,8 @@ const Cinemas = () => {
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: 'cinemaId',
+      key: 'cinemaId',
       width: 80,
     },
     {
@@ -152,29 +149,16 @@ const Cinemas = () => {
     },
     {
       title: 'Thành phố',
-      dataIndex: 'city',
-      key: 'city',
+      dataIndex: 'cityName',
+      key: 'cityName',
       width: 120,
-      render: (city) => city ? city.name : '-',
+      render: (_, record) => record.cityName || '-',
     },
     {
-      title: 'Số điện thoại',
-      dataIndex: 'phone',
-      key: 'phone',
+      title: 'Số liên hệ',
+      dataIndex: 'contactInfo',
+      key: 'contactInfo',
       width: 120,
-    },
-    {
-      title: 'Email',
-      dataIndex: 'email',
-      key: 'email',
-      width: 180,
-    },
-    {
-      title: 'Số phòng chiếu',
-      dataIndex: 'cinemaHalls',
-      key: 'cinemaHalls',
-      width: 120,
-      render: (halls) => halls ? halls.length : 0,
     },
     {
       title: 'Thao tác',
@@ -200,7 +184,7 @@ const Cinemas = () => {
           </Button>
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa rạp chiếu này?"
-            onConfirm={() => handleDelete(record.id)}
+            onConfirm={() => handleDelete(record.cinemaId)}
             okText="Có"
             cancelText="Không"
           >
@@ -253,8 +237,8 @@ const Cinemas = () => {
 
         <Table
           columns={columns}
-          dataSource={cinemas.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
-          rowKey="key"
+          dataSource={cinemas.map((item, idx) => ({ ...item, key: item.cinemaId ?? `row-${idx}` }))}
+          rowKey="cinemaId"
           loading={loading}
           pagination={{
             pageSize: 10,
@@ -262,7 +246,7 @@ const Cinemas = () => {
             showQuickJumper: true,
             showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} rạp chiếu`,
           }}
-          scroll={{ x: 1200 }}
+          scroll={{ x: 'max-content' }}
         />
 
         {/* Modal thêm/sửa rạp chiếu */}
@@ -301,25 +285,14 @@ const Cinemas = () => {
             </Form.Item>
 
             <Form.Item
-              name="phone"
-              label="Số điện thoại"
+              name="contactInfo"
+              label="Số liên hệ"
               rules={[
-                { required: true, message: 'Vui lòng nhập số điện thoại!' },
-                { pattern: /^[0-9+\-\s()]+$/, message: 'Số điện thoại không hợp lệ!' }
+                { required: true, message: 'Vui lòng nhập số liên hệ!' },
+                { pattern: /^[0-9+\-\s()]+$/, message: 'Số liên hệ không hợp lệ!' }
               ]}
             >
-              <Input placeholder="Nhập số điện thoại" />
-            </Form.Item>
-
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[
-                { required: true, message: 'Vui lòng nhập email!' },
-                { type: 'email', message: 'Email không hợp lệ!' }
-              ]}
-            >
-              <Input placeholder="Nhập email" />
+              <Input placeholder="Nhập số liên hệ" />
             </Form.Item>
 
             <Form.Item
@@ -336,13 +309,6 @@ const Cinemas = () => {
                   </Option>
                 ))}
               </Select>
-            </Form.Item>
-
-            <Form.Item
-              name="description"
-              label="Mô tả"
-            >
-              <TextArea rows={3} placeholder="Nhập mô tả (không bắt buộc)" />
             </Form.Item>
 
             <Form.Item>
@@ -374,12 +340,8 @@ const Cinemas = () => {
             <div>
               <p><strong>Tên rạp:</strong> {detailCinema.name}</p>
               <p><strong>Địa chỉ:</strong> {detailCinema.address}</p>
-              <p><strong>Thành phố:</strong> {detailCinema.city?.name || '-'}</p>
-              <p><strong>Số điện thoại:</strong> {detailCinema.phone}</p>
-              <p><strong>Email:</strong> {detailCinema.email}</p>
-              <p><strong>Mô tả:</strong> {detailCinema.description || 'Không có'}</p>
-              <p><strong>Số phòng chiếu:</strong> {detailCinema.cinemaHalls?.length || 0}</p>
-              <p><strong>Ngày tạo:</strong> {detailCinema.createdAt ? new Date(detailCinema.createdAt).toLocaleDateString('vi-VN') : '-'}</p>
+              <p><strong>Thành phố:</strong> {detailCinema.cityName || '-'}</p>
+              <p><strong>Số liên hệ:</strong> {detailCinema.contactInfo}</p>
             </div>
           )}
         </Modal>

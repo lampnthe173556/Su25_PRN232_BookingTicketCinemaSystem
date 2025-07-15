@@ -50,8 +50,7 @@ const Showtimes = () => {
         movieService.getAll(),
         cinemaHallService.getAll(),
       ]);
-      
-      setShowtimes(showtimesData);
+      setShowtimes(showtimesData.map(Show.fromApi));
       setMovies(moviesData);
       setCinemaHalls(hallsData);
     } catch (error) {
@@ -71,12 +70,10 @@ const Showtimes = () => {
     setEditingShow(record);
     form.setFieldsValue({
       movieId: record.movieId,
-      cinemaHallId: record.cinemaHallId,
-      startTime: record.startTime ? dayjs(record.startTime, 'HH:mm') : null,
-      endTime: record.endTime ? dayjs(record.endTime, 'HH:mm') : null,
-      date: record.date ? dayjs(record.date) : null,
-      price: record.price,
-      status: record.status
+      hallId: record.hallId,
+      startTime: record.startTime,
+      endTime: record.endTime,
+      ticketPrice: record.ticketPrice
     });
     setModalVisible(true);
   };
@@ -105,7 +102,7 @@ const Showtimes = () => {
       });
       
       if (editingShow) {
-        await showService.update(editingShow.id, showData.toUpdateDto());
+        await showService.update(editingShow.showId, showData.toUpdateDto());
         Toast.success('Cập nhật suất chiếu thành công');
       } else {
         await showService.create(showData.toCreateDto());
@@ -145,30 +142,23 @@ const Showtimes = () => {
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: 'showId',
+      key: 'showId',
       width: 80,
     },
     {
       title: 'Phim',
-      dataIndex: 'movie',
-      key: 'movie',
+      dataIndex: 'movieTitle',
+      key: 'movieTitle',
       width: 200,
-      render: (movie) => movie ? movie.title : '-',
+      render: (_, record) => record.movieTitle || '-',
     },
     {
       title: 'Phòng chiếu',
-      dataIndex: 'cinemaHall',
-      key: 'cinemaHall',
+      dataIndex: 'hallName',
+      key: 'hallName',
       width: 150,
-      render: (hall) => hall ? hall.name : '-',
-    },
-    {
-      title: 'Ngày',
-      dataIndex: 'date',
-      key: 'date',
-      width: 120,
-      render: (date) => date ? new Date(date).toLocaleDateString('vi-VN') : '-',
+      render: (_, record) => record.hallName || '-',
     },
     {
       title: 'Giờ bắt đầu',
@@ -186,21 +176,10 @@ const Showtimes = () => {
     },
     {
       title: 'Giá vé',
-      dataIndex: 'price',
-      key: 'price',
+      dataIndex: 'ticketPrice',
+      key: 'ticketPrice',
       width: 100,
       render: (price) => price ? `${price.toLocaleString()} VNĐ` : '-',
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      width: 120,
-      render: (status) => (
-        <Tag color={getStatusColor(status)}>
-          {getStatusText(status)}
-        </Tag>
-      ),
     },
     {
       title: 'Thao tác',
@@ -226,7 +205,7 @@ const Showtimes = () => {
           </Button>
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa suất chiếu này?"
-            onConfirm={() => handleDelete(record.id)}
+            onConfirm={() => handleDelete(record.showId)}
             okText="Có"
             cancelText="Không"
           >
@@ -260,8 +239,8 @@ const Showtimes = () => {
 
         <Table
           columns={columns}
-          dataSource={showtimes.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
-          rowKey="key"
+          dataSource={showtimes.map((item, idx) => ({ ...item, key: item.showId ?? `row-${idx}` }))}
+          rowKey="showId"
           loading={loading}
           pagination={{
             pageSize: 10,
@@ -278,7 +257,7 @@ const Showtimes = () => {
           open={modalVisible}
           onCancel={() => setModalVisible(false)}
           footer={null}
-          width={600}
+          width={500}
           destroyOnClose
         >
           <Form
@@ -301,9 +280,8 @@ const Showtimes = () => {
                 ))}
               </Select>
             </Form.Item>
-
             <Form.Item
-              name="cinemaHallId"
+              name="hallId"
               label="Phòng chiếu"
               rules={[
                 { required: true, message: 'Vui lòng chọn phòng chiếu!' }
@@ -311,86 +289,40 @@ const Showtimes = () => {
             >
               <Select placeholder="Chọn phòng chiếu">
                 {cinemaHalls.map(hall => (
-                  <Option key={hall.id} value={hall.id}>
+                  <Option key={hall.cinemaHallId} value={hall.cinemaHallId}>
                     {hall.name}
                   </Option>
                 ))}
               </Select>
             </Form.Item>
-
-            <Form.Item
-              name="date"
-              label="Ngày chiếu"
-              rules={[
-                { required: true, message: 'Vui lòng chọn ngày chiếu!' }
-              ]}
-            >
-              <DatePicker 
-                placeholder="Chọn ngày chiếu"
-                style={{ width: '100%' }}
-                format="DD/MM/YYYY"
-              />
-            </Form.Item>
-
             <Form.Item
               name="startTime"
               label="Giờ bắt đầu"
               rules={[
-                { required: true, message: 'Vui lòng chọn giờ bắt đầu!' }
+                { required: true, message: 'Vui lòng nhập giờ bắt đầu!' }
               ]}
             >
-              <TimePicker 
-                placeholder="Chọn giờ bắt đầu"
-                style={{ width: '100%' }}
-                format="HH:mm"
-              />
+              <Input placeholder="Nhập giờ bắt đầu (HH:mm)" />
             </Form.Item>
-
             <Form.Item
               name="endTime"
               label="Giờ kết thúc"
               rules={[
-                { required: true, message: 'Vui lòng chọn giờ kết thúc!' }
+                { required: true, message: 'Vui lòng nhập giờ kết thúc!' }
               ]}
             >
-              <TimePicker 
-                placeholder="Chọn giờ kết thúc"
-                style={{ width: '100%' }}
-                format="HH:mm"
-              />
+              <Input placeholder="Nhập giờ kết thúc (HH:mm)" />
             </Form.Item>
-
             <Form.Item
-              name="price"
-              label="Giá vé (VNĐ)"
+              name="ticketPrice"
+              label="Giá vé"
               rules={[
                 { required: true, message: 'Vui lòng nhập giá vé!' },
                 { type: 'number', min: 0, message: 'Giá vé phải lớn hơn hoặc bằng 0!' }
               ]}
             >
-              <InputNumber
-                placeholder="Nhập giá vé"
-                min={0}
-                style={{ width: '100%' }}
-                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={value => value.replace(/\$\s?|(,*)/g, '')}
-              />
+              <InputNumber min={0} placeholder="Nhập giá vé" style={{ width: '100%' }} />
             </Form.Item>
-
-            <Form.Item
-              name="status"
-              label="Trạng thái"
-              rules={[
-                { required: true, message: 'Vui lòng chọn trạng thái!' }
-              ]}
-            >
-              <Select placeholder="Chọn trạng thái">
-                <Option value="active">Hoạt động</Option>
-                <Option value="inactive">Không hoạt động</Option>
-                <Option value="cancelled">Đã hủy</Option>
-              </Select>
-            </Form.Item>
-
             <Form.Item>
               <Space>
                 <Button type="primary" htmlType="submit">
@@ -414,18 +346,15 @@ const Showtimes = () => {
               Đóng
             </Button>
           ]}
-          width={600}
+          width={500}
         >
           {detailShow && (
             <div>
-              <p><strong>Phim:</strong> {detailShow.movie?.title || '-'}</p>
-              <p><strong>Phòng chiếu:</strong> {detailShow.cinemaHall?.name || '-'}</p>
-              <p><strong>Ngày chiếu:</strong> {detailShow.date ? new Date(detailShow.date).toLocaleDateString('vi-VN') : '-'}</p>
+              <p><strong>Phim:</strong> {detailShow.movieTitle || '-'}</p>
+              <p><strong>Phòng chiếu:</strong> {detailShow.hallName || '-'}</p>
               <p><strong>Giờ bắt đầu:</strong> {detailShow.startTime || '-'}</p>
               <p><strong>Giờ kết thúc:</strong> {detailShow.endTime || '-'}</p>
-              <p><strong>Giá vé:</strong> {detailShow.price ? `${detailShow.price.toLocaleString()} VNĐ` : '-'}</p>
-              <p><strong>Trạng thái:</strong> <Tag color={getStatusColor(detailShow.status)}>{getStatusText(detailShow.status)}</Tag></p>
-              <p><strong>Ngày tạo:</strong> {detailShow.createdAt ? new Date(detailShow.createdAt).toLocaleDateString('vi-VN') : '-'}</p>
+              <p><strong>Giá vé:</strong> {detailShow.ticketPrice ? `${detailShow.ticketPrice.toLocaleString()} VNĐ` : '-'}</p>
             </div>
           )}
         </Modal>

@@ -1,33 +1,35 @@
 export class Payment {
   constructor(data = {}) {
-    this.id = data.id || null;
+    this.paymentId = data.paymentId || null;
     this.bookingId = data.bookingId || null;
-    this.booking = data.booking || null;
     this.amount = data.amount || 0;
+    this.paymentStatus = data.paymentStatus || '';
     this.paymentMethod = data.paymentMethod || '';
-    this.status = data.status || 'pending';
     this.transactionId = data.transactionId || '';
-    this.paymentDate = data.paymentDate || null;
     this.createdAt = data.createdAt || null;
-    this.updatedAt = data.updatedAt || null;
+    this.modifiedAt = data.modifiedAt || null;
+    this.userId = data.userId || null;
+    this.userName = data.userName || '';
+    this.showId = data.showId || null;
+    this.movieTitle = data.movieTitle || '';
+    this.showTime = data.showTime || null;
   }
 
   static fromApi(data) {
     return new Payment({
-      id: data.paymentId || data.id,
+      paymentId: data.paymentId || data.id,
       bookingId: data.bookingId,
-      booking: data.booking ? { 
-        id: data.booking.bookingId, 
-        totalAmount: data.booking.totalAmount,
-        status: data.booking.status
-      } : null,
       amount: data.amount,
+      paymentStatus: data.paymentStatus || data.status,
       paymentMethod: data.paymentMethod,
-      status: data.status,
       transactionId: data.transactionId,
-      paymentDate: data.paymentDate,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt
+      createdAt: data.createdAt || data.paymentDate,
+      modifiedAt: data.modifiedAt || data.updatedAt,
+      userId: data.userId,
+      userName: data.userName,
+      showId: data.showId,
+      movieTitle: data.movieTitle,
+      showTime: data.showTime
     });
   }
 
@@ -35,10 +37,10 @@ export class Payment {
     return {
       bookingId: this.bookingId,
       amount: this.amount,
+      paymentStatus: this.paymentStatus,
       paymentMethod: this.paymentMethod,
-      status: this.status,
       transactionId: this.transactionId,
-      paymentDate: this.paymentDate
+      createdAt: this.createdAt
     };
   }
 
@@ -46,10 +48,10 @@ export class Payment {
     return {
       bookingId: this.bookingId,
       amount: this.amount,
+      paymentStatus: this.paymentStatus,
       paymentMethod: this.paymentMethod,
-      status: this.status,
       transactionId: this.transactionId,
-      paymentDate: this.paymentDate
+      createdAt: this.createdAt
     };
   }
 } 

@@ -1,54 +1,37 @@
 export class Seat {
   constructor(data = {}) {
-    this.id = data.id || null;
+    this.seatId = data.seatId || null;
+    this.hallId = data.hallId || null;
     this.rowNumber = data.rowNumber || '';
-    this.seatNumber = data.seatNumber || '';
-    this.cinemaHallId = data.cinemaHallId || null;
-    this.cinemaHall = data.cinemaHall || null;
+    this.columnNumber = data.columnNumber || 0;
     this.seatType = data.seatType || 'standard';
-    this.price = data.price || 0;
-    this.isAvailable = data.isAvailable !== undefined ? data.isAvailable : true;
-    this.createdAt = data.createdAt || null;
-    this.updatedAt = data.updatedAt || null;
   }
 
   static fromApi(data) {
     return new Seat({
-      id: data.seatId || data.id,
+      seatId: data.seatId || data.id,
+      hallId: data.hallId,
       rowNumber: data.rowNumber,
-      seatNumber: data.seatNumber,
-      cinemaHallId: data.cinemaHallId,
-      cinemaHall: data.cinemaHall ? { 
-        id: data.cinemaHall.cinemaHallId, 
-        name: data.cinemaHall.name 
-      } : null,
-      seatType: data.seatType,
-      price: data.price,
-      isAvailable: data.isAvailable,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt
+      columnNumber: data.columnNumber,
+      seatType: data.seatType
     });
   }
 
   toCreateDto() {
     return {
+      hallId: this.hallId,
       rowNumber: this.rowNumber,
-      seatNumber: this.seatNumber,
-      cinemaHallId: this.cinemaHallId,
-      seatType: this.seatType,
-      price: this.price,
-      isAvailable: this.isAvailable
+      columnNumber: this.columnNumber,
+      seatType: this.seatType
     };
   }
 
   toUpdateDto() {
     return {
+      hallId: this.hallId,
       rowNumber: this.rowNumber,
-      seatNumber: this.seatNumber,
-      cinemaHallId: this.cinemaHallId,
-      seatType: this.seatType,
-      price: this.price,
-      isAvailable: this.isAvailable
+      columnNumber: this.columnNumber,
+      seatType: this.seatType
     };
   }
 } 

@@ -1,41 +1,41 @@
 export class CinemaHall {
   constructor(data = {}) {
-    this.id = data.id || null;
-    this.name = data.name || '';
-    this.capacity = data.capacity || 0;
+    this.cinemaHallId = data.cinemaHallId || null;
     this.cinemaId = data.cinemaId || null;
-    this.cinema = data.cinema || null;
-    this.seats = data.seats || [];
+    this.cinemaName = data.cinemaName || '';
+    this.name = data.name || '';
+    this.totalSeats = data.totalSeats || 0;
     this.createdAt = data.createdAt || null;
-    this.updatedAt = data.updatedAt || null;
+    this.modifiedAt = data.modifiedAt || null;
+    this.seats = data.seats || [];
   }
 
   static fromApi(data) {
     return new CinemaHall({
-      id: data.cinemaHallId || data.id,
-      name: data.name,
-      capacity: data.capacity,
+      cinemaHallId: data.cinemaHallId || data.id,
       cinemaId: data.cinemaId,
-      cinema: data.cinema ? { id: data.cinema.cinemaId, name: data.cinema.name } : null,
-      seats: data.seats || [],
+      cinemaName: data.cinemaName,
+      name: data.name,
+      totalSeats: data.totalSeats,
       createdAt: data.createdAt,
-      updatedAt: data.updatedAt
+      modifiedAt: data.modifiedAt,
+      seats: data.seats || []
     });
   }
 
   toCreateDto() {
     return {
+      cinemaId: this.cinemaId,
       name: this.name,
-      capacity: this.capacity,
-      cinemaId: this.cinemaId
+      totalSeats: this.totalSeats
     };
   }
 
   toUpdateDto() {
     return {
+      cinemaId: this.cinemaId,
       name: this.name,
-      capacity: this.capacity,
-      cinemaId: this.cinemaId
+      totalSeats: this.totalSeats
     };
   }
 } 

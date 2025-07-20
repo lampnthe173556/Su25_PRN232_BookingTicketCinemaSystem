@@ -27,7 +27,8 @@ namespace BookingTicketSysten.Services.ShowServices
                     HallName = s.Hall.Name,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
-                    TicketPrice = s.TicketPrice
+                    TicketPrice = s.TicketPrice,
+                    ShowDate = s.ShowDate
                 }).ToListAsync();
         }
 
@@ -49,7 +50,8 @@ namespace BookingTicketSysten.Services.ShowServices
                 HallName = s.Hall.Name,
                 StartTime = s.StartTime,
                 EndTime = s.EndTime,
-                TicketPrice = s.TicketPrice
+                TicketPrice = s.TicketPrice,
+                ShowDate = s.ShowDate
             };
         }
 
@@ -62,6 +64,7 @@ namespace BookingTicketSysten.Services.ShowServices
                 StartTime = dto.StartTime,
                 EndTime = dto.EndTime,
                 TicketPrice = dto.TicketPrice,
+                ShowDate = dto.ShowDate,
                 CreatedAt = DateTime.Now
             };
 
@@ -81,6 +84,7 @@ namespace BookingTicketSysten.Services.ShowServices
             show.StartTime = dto.StartTime;
             show.EndTime = dto.EndTime;
             show.TicketPrice = dto.TicketPrice;
+            show.ShowDate = dto.ShowDate;
             show.ModifiedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
@@ -112,7 +116,28 @@ namespace BookingTicketSysten.Services.ShowServices
                     HallName = s.Hall.Name,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
-                    TicketPrice = s.TicketPrice
+                    TicketPrice = s.TicketPrice,
+                    ShowDate = s.ShowDate
+                }).ToListAsync();
+        }
+
+        public async Task<IEnumerable<ShowDto>> GetShowsByDateAsync(DateOnly date)
+        {
+            return await _context.Shows
+                .Include(s => s.Movie)
+                .Include(s => s.Hall)
+                .Where(s => s.ShowDate == date)
+                .Select(s => new ShowDto
+                {
+                    ShowId = s.ShowId,
+                    MovieId = s.MovieId,
+                    MovieTitle = s.Movie.Title,
+                    HallId = s.HallId,
+                    HallName = s.Hall.Name,
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                    TicketPrice = s.TicketPrice,
+                    ShowDate = s.ShowDate
                 }).ToListAsync();
         }
     }

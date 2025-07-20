@@ -11,5 +11,6 @@ namespace BookingTicketSysten.Services.ShowServices
         Task<bool> UpdateShowAsync(int id, CreateShowDto dto);
         Task<bool> DeleteShowAsync(int id);
         Task<IEnumerable<ShowDto>> GetShowsByMovieIdAsync(int movieId);
+        Task<IEnumerable<ShowDto>> GetShowsByDateAsync(DateOnly date);
     }
 }

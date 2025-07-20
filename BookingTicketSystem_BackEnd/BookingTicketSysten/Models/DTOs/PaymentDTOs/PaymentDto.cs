@@ -19,5 +19,6 @@ namespace BookingTicketSysten.Models.DTOs.PaymentDTOs
         public int ShowId { get; set; }
         public string MovieTitle { get; set; }
         public DateTime ShowTime { get; set; }
+        public DateOnly? ShowDate { get; set; }
     }
 } 

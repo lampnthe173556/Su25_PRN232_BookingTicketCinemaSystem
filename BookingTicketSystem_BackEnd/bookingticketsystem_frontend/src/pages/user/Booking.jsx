@@ -36,15 +36,16 @@ const Booking = () => {
 
   // Xử lý tự động chọn phim, suất chiếu nếu có query
   useEffect(() => {
-    if (movieIdParam && movies.length > 0) {
-      const movie = movies.find(m => m.movieId === Number(movieIdParam));
-      if (movie) {
-        setSelectedMovie(movie);
-        if (showtimeIdParam) {
-          loadShowtimes(movie.movieId);
-        } else {
-          setCurrent(1); // Nhảy đến bước chọn suất chiếu
-        }
+    if (!movieIdParam) return;
+    if (movies.length === 0) return; // Chờ movies load xong
+    const movie = movies.find(m => m.movieId === Number(movieIdParam));
+    if (movie) {
+      setSelectedMovie(movie);
+      loadShowtimes(movie.movieId);
+      if (showtimeIdParam) {
+        setCurrent(2);
+      } else {
+        setCurrent(1);
       }
     }
   }, [movieIdParam, showtimeIdParam, movies]);
@@ -163,10 +164,10 @@ const Booking = () => {
       message.success(`Mã đặt vé: ${result.bookingId}`);
       
       // Reset form
-      setCurrent(0);
-      setSelectedMovie(null);
-      setSelectedShowtime(null);
-      setSelectedSeats([]);
+    setCurrent(0);
+    setSelectedMovie(null);
+    setSelectedShowtime(null);
+    setSelectedSeats([]);
       setSeatAvailability(null);
       setSeatMap([]);
       
@@ -217,14 +218,14 @@ const Booking = () => {
         <div>
           <Select
             placeholder="Chọn suất chiếu..."
-            style={{ width: 300 }}
+            style={{ width: 400 }}
             value={selectedShowtime?.showId}
             onChange={handleSelectShowtime}
             loading={!selectedMovie.showtimes}
           >
             {selectedMovie.showtimes?.map(s => (
               <Option key={s.showId} value={s.showId}>
-                {`${new Date(s.startTime).toLocaleDateString('vi-VN')} - ${new Date(s.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} (${s.hallName})`}
+                {`${new Date(s.startTime).toLocaleDateString('vi-VN')} - ${new Date(s.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} | ${s.hallName} | ${s.cinemaName || ''}`}
               </Option>
             ))}
           </Select>
@@ -233,6 +234,7 @@ const Booking = () => {
               <Tag color="blue">{new Date(selectedShowtime.startTime).toLocaleDateString('vi-VN')}</Tag>
               <Tag color="green">{new Date(selectedShowtime.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</Tag>
               <Tag color="purple">{selectedShowtime.hallName}</Tag>
+              {selectedShowtime.cinemaName && <Tag color="magenta">{selectedShowtime.cinemaName}</Tag>}
               <Tag color="orange">{selectedShowtime.ticketPrice.toLocaleString('vi-VN')} VNĐ</Tag>
             </div>
           )}
@@ -250,25 +252,25 @@ const Booking = () => {
             </div>
           ) : seatAvailability ? (
             <>
-              <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 16 }}>
                 <div style={{ textAlign: 'center', marginBottom: 16 }}>
                   <div style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>MÀN HÌNH</div>
                   <div style={{ height: 2, backgroundColor: '#ccc', marginBottom: 24 }}></div>
                 </div>
                 
-                {seatMap.map((row, i) => (
+            {seatMap.map((row, i) => (
                   <div key={i} style={{ marginBottom: 8, textAlign: 'center' }}>
                     <span style={{ marginRight: 8, fontWeight: 'bold', minWidth: 20, display: 'inline-block' }}>
                       {row[0]?.rowNumber}
                     </span>
-                    {row.map((seat) => {
+                {row.map((seat) => {
                       const isBooked = seatAvailability.bookedSeatIds.includes(seat.seatId);
                       const isSelected = selectedSeats.find(s => s.seatId === seat.seatId);
-                      return (
-                        <Button
+                  return (
+                    <Button
                           key={seat.seatId}
-                          type={isSelected ? "primary" : "default"}
-                          disabled={isBooked}
+                      type={isSelected ? "primary" : "default"}
+                      disabled={isBooked}
                           style={{ 
                             marginRight: 4, 
                             marginBottom: 4, 
@@ -280,14 +282,14 @@ const Booking = () => {
                             borderColor: isBooked ? '#ff4d4f' : isSelected ? '#1890ff' : '#d9d9d9',
                             cursor: isBooked ? 'not-allowed' : 'pointer'
                           }}
-                          onClick={() => handleSelectSeat(seat)}
-                        >
+                      onClick={() => handleSelectSeat(seat)}
+                    >
                           {seat.columnNumber}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                ))}
+                    </Button>
+                  );
+                })}
+              </div>
+            ))}
               </div>
               
               <div style={{ marginBottom: 16 }}>
@@ -308,14 +310,14 @@ const Booking = () => {
                 
                 <div style={{ marginBottom: 16 }}>
                   <b>Ghế đã chọn:</b> {selectedSeats.map(s => `${s.rowNumber}${s.columnNumber}`).join(", ") || "Chưa chọn"}
-                </div>
-                <div style={{ marginBottom: 16 }}>
+          </div>
+          <div style={{ marginBottom: 16 }}>
                   <b>Tổng tiền:</b> {(selectedSeats.length * selectedShowtime.ticketPrice).toLocaleString('vi-VN')} VNĐ
-                </div>
-                <div style={{ marginBottom: 16 }}>
+          </div>
+          <div style={{ marginBottom: 16 }}>
                   <b>Thống kê:</b> {seatAvailability.availableSeatsCount} ghế trống / {seatAvailability.totalSeats} tổng số ghế
                 </div>
-              </div>
+          </div>
             </>
           ) : (
             <Empty description="Không có thông tin ghế" />

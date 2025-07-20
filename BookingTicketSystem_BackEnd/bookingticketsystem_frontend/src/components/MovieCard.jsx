@@ -28,9 +28,9 @@ export default function MovieCard({ movie, isFavorite, loadingFavorite, onToggle
         padding: 0,
         background: '#fff',
         position: 'relative',
-        cursor: 'pointer'
+        cursor: 'default'
       }}
-      onClick={() => onViewDetail && onViewDetail(movie)}
+      // Không gán onClick cho Card nữa
       cover={
         <img
           alt={movie.title}
@@ -42,8 +42,10 @@ export default function MovieCard({ movie, isFavorite, loadingFavorite, onToggle
             borderTopLeftRadius: 14,
             borderTopRightRadius: 14,
             background: '#eee',
-            display: 'block'
+            display: 'block',
+            cursor: 'pointer'
           }}
+          onClick={e => { e.stopPropagation(); onViewDetail && onViewDetail(movie); }}
           onError={e => { e.target.onerror = null; e.target.src = POSTER_PLACEHOLDER; }}
         />
       }

@@ -8,7 +8,7 @@ const { Header } = Layout;
 
 const menuItems = [
   { key: "home", label: <Link to="/">Trang chủ</Link> },
-  { key: "movies", label: <Link to="/">Phim</Link> },
+  { key: "all-movies", label: <Link to="/movies">Tất cả phim</Link> },
   { key: "booking", label: <Link to="/booking">Đặt vé</Link> },
   { key: "favorites", label: <Link to="/favorites">Yêu thích</Link> },
   { key: "booking-history", label: <Link to="/booking-history">Lịch sử đặt vé</Link> },
@@ -33,7 +33,10 @@ const AppHeader = () => {
       <Menu.Item key="profile">
         <Link to="/profile">Tài khoản</Link>
       </Menu.Item>
-      <Menu.Item key="favorites" icon={<HeartOutlined />}>
+      <Menu.Item key="all-movies">
+        <Link to="/movies">Tất cả phim</Link>
+      </Menu.Item>
+      <Menu.Item key="favorites">
         <Link to="/favorites">Phim yêu thích</Link>
       </Menu.Item>
       <Menu.Item key="booking-history">

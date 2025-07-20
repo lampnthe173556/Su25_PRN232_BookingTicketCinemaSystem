@@ -38,7 +38,7 @@ const ProfileInfo = () => {
 
   return (
     <div style={{ maxWidth: 400 }}>
-      <Title level={3}>Thông tin tài khoản</Title>
+    <Title level={3}>Thông tin tài khoản</Title>
       <Form
         form={form}
         layout="vertical"
@@ -68,8 +68,8 @@ const ProfileInfo = () => {
           </Button>
         )}
       </Form>
-    </div>
-  );
+  </div>
+);
 };
 
 export default ProfileInfo; 

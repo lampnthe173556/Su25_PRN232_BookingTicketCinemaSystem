@@ -135,9 +135,9 @@ const BookingHistory = () => {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 150,
+      width: 200,
       render: (_, record) => (
-        <Space>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           <Button 
             type="link" 
             icon={<EyeOutlined />} 
@@ -161,7 +161,7 @@ const BookingHistory = () => {
               Hủy
             </Button>
           )}
-        </Space>
+        </div>
       ),
     },
   ];
@@ -217,6 +217,15 @@ const BookingHistory = () => {
             </Descriptions.Item>
             <Descriptions.Item label="Giờ chiếu">
               {detailBooking.showStartTime ? new Date(detailBooking.showStartTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Phòng chiếu">
+              {detailBooking.hallName || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Rạp">
+              {detailBooking.cinemaName || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Địa chỉ rạp">
+              {detailBooking.cinemaAddress || '-'}
             </Descriptions.Item>
             <Descriptions.Item label="Số ghế">
               {detailBooking.numberOfSeats}

@@ -11,5 +11,8 @@
         public decimal TotalPrice { get; set; }
         public string Status { get; set; }
         public List<SeatInfoDto> Seats { get; set; }
+        public string HallName { get; set; } // Thêm tên phòng
+        public string CinemaName { get; set; } // Thêm tên rạp
+        public string CinemaAddress { get; set; } // Thêm địa chỉ rạp
     }
 }

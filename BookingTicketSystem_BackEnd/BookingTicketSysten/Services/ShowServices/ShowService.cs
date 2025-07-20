@@ -18,6 +18,7 @@ namespace BookingTicketSysten.Services.ShowServices
             return await _context.Shows
                 .Include(s => s.Movie)
                 .Include(s => s.Hall)
+                .Include(s => s.Hall).ThenInclude(h => h.Cinema)
                 .Select(s => new ShowDto
                 {
                     ShowId = s.ShowId,
@@ -25,6 +26,7 @@ namespace BookingTicketSysten.Services.ShowServices
                     MovieTitle = s.Movie.Title,
                     HallId = s.HallId,
                     HallName = s.Hall.Name,
+                    CinemaName = s.Hall.Cinema.Name,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
                     TicketPrice = s.TicketPrice,
@@ -37,6 +39,7 @@ namespace BookingTicketSysten.Services.ShowServices
             var s = await _context.Shows
                 .Include(s => s.Movie)
                 .Include(s => s.Hall)
+                .Include(s => s.Hall).ThenInclude(h => h.Cinema)
                 .FirstOrDefaultAsync(s => s.ShowId == id);
 
             if (s == null) return null;
@@ -48,6 +51,7 @@ namespace BookingTicketSysten.Services.ShowServices
                 MovieTitle = s.Movie.Title,
                 HallId = s.HallId,
                 HallName = s.Hall.Name,
+                CinemaName = s.Hall.Cinema.Name,
                 StartTime = s.StartTime,
                 EndTime = s.EndTime,
                 TicketPrice = s.TicketPrice,
@@ -106,6 +110,7 @@ namespace BookingTicketSysten.Services.ShowServices
             return await _context.Shows
                 .Include(s => s.Movie)
                 .Include(s => s.Hall)
+                .Include(s => s.Hall).ThenInclude(h => h.Cinema)
                 .Where(s => s.MovieId == movieId)
                 .Select(s => new ShowDto
                 {
@@ -114,6 +119,7 @@ namespace BookingTicketSysten.Services.ShowServices
                     MovieTitle = s.Movie.Title,
                     HallId = s.HallId,
                     HallName = s.Hall.Name,
+                    CinemaName = s.Hall.Cinema.Name,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
                     TicketPrice = s.TicketPrice,
@@ -126,6 +132,7 @@ namespace BookingTicketSysten.Services.ShowServices
             return await _context.Shows
                 .Include(s => s.Movie)
                 .Include(s => s.Hall)
+                .Include(s => s.Hall).ThenInclude(h => h.Cinema)
                 .Where(s => s.ShowDate == date)
                 .Select(s => new ShowDto
                 {
@@ -134,6 +141,7 @@ namespace BookingTicketSysten.Services.ShowServices
                     MovieTitle = s.Movie.Title,
                     HallId = s.HallId,
                     HallName = s.Hall.Name,
+                    CinemaName = s.Hall.Cinema.Name,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
                     TicketPrice = s.TicketPrice,

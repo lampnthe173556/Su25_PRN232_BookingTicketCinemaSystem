@@ -110,7 +110,7 @@ const Home = () => {
       navigate('/login');
       return;
     }
-    navigate(`/movies/${movie.movieId}`);
+    navigate(`/booking?movieId=${movie.movieId}`);
   };
 
   // Xử lý xem chi tiết phim

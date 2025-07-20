@@ -62,20 +62,7 @@ const Profile = () => {
                 ),
                 children: <ChangePassword />,
               },
-              {
-                key: "history",
-                label: (
-                  <span><HistoryOutlined /> Lịch sử đặt vé</span>
-                ),
-                children: <BookingHistory />,
-              },
-              {
-                key: "favorite",
-                label: (
-                  <span><HeartOutlined /> Yêu thích</span>
-                ),
-                children: <FavoriteMovies />,
-              },
+              
             ]}
           />
         </Col>

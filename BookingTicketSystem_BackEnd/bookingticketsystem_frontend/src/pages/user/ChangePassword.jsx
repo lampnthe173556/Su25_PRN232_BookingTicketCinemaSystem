@@ -1,10 +1,27 @@
 import React from "react";
 import { Form, Input, Button, message } from "antd";
+import { useAuth } from "../../hooks/useAuth";
+import userService from "../../services/userService";
 
 const ChangePassword = () => {
-  const onFinish = (values) => {
-    // Giả lập đổi mật khẩu thành công
-    message.success("Đổi mật khẩu thành công!");
+  const { user } = useAuth();
+
+  const onFinish = async (values) => {
+    if (!user) {
+      message.error("Vui lòng đăng nhập lại!");
+      return;
+    }
+    try {
+      await userService.changePassword(
+        user.email,
+        values.oldPassword,
+        values.newPassword,
+        values.confirmPassword
+      );
+      message.success("Đổi mật khẩu thành công!");
+    } catch (error) {
+      message.error(error.message || "Đổi mật khẩu thất bại!");
+    }
   };
 
   return (

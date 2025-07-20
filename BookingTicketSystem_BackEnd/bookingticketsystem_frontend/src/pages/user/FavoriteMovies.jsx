@@ -58,7 +58,7 @@ const FavoriteMovies = () => {
   };
 
   const handleViewMovie = (movieId) => {
-    navigate(`/movie/${movieId}`);
+    navigate(`/movies/${movieId}`);
   };
 
   if (!user) {

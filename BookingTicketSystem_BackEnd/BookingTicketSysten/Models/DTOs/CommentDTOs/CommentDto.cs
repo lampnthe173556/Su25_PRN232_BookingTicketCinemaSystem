@@ -13,6 +13,7 @@ namespace BookingTicketSysten.Models.DTOs.CommentDTOs
         public bool? IsApproved { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? ModifiedAt { get; set; }
+        public string UserName { get; set; }
         public List<CommentDto> Replies { get; set; } = new();
     }
 } 

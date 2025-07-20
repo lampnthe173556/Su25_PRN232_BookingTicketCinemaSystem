@@ -30,10 +30,8 @@ const Home = () => {
     async function fetchData() {
       setLoading(true);
       try {
-        // Debug: kiểm tra trạng thái user
-        console.log('Current user:', user);
-        console.log('localStorage user:', localStorage.getItem('user'));
-        console.log('localStorage token:', localStorage.getItem('token'));
+        
+       
         
         const [movieList, genreList, topList] = await Promise.all([
           movieService.getAll(),
@@ -46,11 +44,11 @@ const Home = () => {
         
         // Lấy danh sách phim yêu thích nếu đã đăng nhập
         if (user) {
-          console.log('User is logged in, fetching favorites...');
+         
           const favs = await movieFavoriteService.getFavoritesByUser();
           setFavoriteIds(favs.map(f => f.movieId));
         } else {
-          console.log('User is not logged in');
+         
           setFavoriteIds([]);
         }
       } catch (error) {
@@ -112,12 +110,12 @@ const Home = () => {
       navigate('/login');
       return;
     }
-    navigate(`/movie/${movie.movieId}`);
+    navigate(`/movies/${movie.movieId}`);
   };
 
   // Xử lý xem chi tiết phim
   const handleViewMovie = (movie) => {
-    navigate(`/movie/${movie.movieId}`);
+    navigate(`/movies/${movie.movieId}`);
   };
 
   return (
@@ -153,6 +151,7 @@ const Home = () => {
                 loadingFavorite={loadingFavoriteId === movie.movieId} 
                 onToggleFavorite={handleToggleFavorite} 
                 onBook={handleBook} 
+                onViewDetail={handleViewMovie}
               />
             </Col>
           ))}
@@ -169,6 +168,7 @@ const Home = () => {
                 loadingFavorite={loadingFavoriteId === movie.movieId} 
                 onToggleFavorite={handleToggleFavorite} 
                 onBook={handleBook} 
+                onViewDetail={handleViewMovie}
               />
             </Col>
           ))}
@@ -185,6 +185,7 @@ const Home = () => {
                 loadingFavorite={loadingFavoriteId === movie.movieId} 
                 onToggleFavorite={handleToggleFavorite} 
                 onBook={handleBook} 
+                onViewDetail={handleViewMovie}
               />
             </Col>
           ))}
@@ -225,6 +226,7 @@ const Home = () => {
                     loadingFavorite={loadingFavoriteId === movie.movieId} 
                     onToggleFavorite={handleToggleFavorite} 
                     onBook={handleBook} 
+                    onViewDetail={handleViewMovie}
                   />
                 </Col>
               ))}

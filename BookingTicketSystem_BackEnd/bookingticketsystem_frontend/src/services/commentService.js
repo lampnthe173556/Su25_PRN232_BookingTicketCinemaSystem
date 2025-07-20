@@ -9,8 +9,23 @@ class CommentService {
         'Content-Type': 'application/json',
       },
     });
+
+    // Add JWT token interceptor
+    this.api.interceptors.request.use(
+      (config) => {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.token) {
+          config.headers.Authorization = `Bearer ${user.token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
   }
 
+  // Tạo bình luận mới
   async create(commentData) {
     try {
       const response = await this.api.post('/', commentData);
@@ -20,11 +35,12 @@ class CommentService {
     }
   }
 
+  // Lấy bình luận theo phim
   async getByMovie(movieId, options = {}) {
     try {
-      const { page = 1, pageSize = 10, sort = 'newest', includeReplies = true, approvedOnly = true, isAdmin = false } = options;
+      const { page = 1, pageSize = 10, sort = 'newest', includeReplies = true, approvedOnly = true } = options;
       const response = await this.api.get(`/movie/${movieId}`, {
-        params: { page, pageSize, sort, includeReplies, approvedOnly, isAdmin }
+        params: { page, pageSize, sort, includeReplies, approvedOnly }
       });
       return response.data;
     } catch (error) {
@@ -32,6 +48,17 @@ class CommentService {
     }
   }
 
+  // Lấy bình luận của user
+  async getByUser(userId) {
+    try {
+      const response = await this.api.get(`/user/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Cập nhật bình luận
   async update(commentId, userId, commentData, isAdmin = false) {
     try {
       const response = await this.api.put(`/${commentId}`, commentData, {
@@ -43,6 +70,7 @@ class CommentService {
     }
   }
 
+  // Xóa bình luận
   async delete(commentId, userId, isAdmin = false) {
     try {
       await this.api.delete(`/${commentId}`, {
@@ -54,39 +82,30 @@ class CommentService {
     }
   }
 
+  // Lấy số lượng bình luận của phim
+  async getCountByMovie(movieId) {
+    try {
+      const response = await this.api.get(`/movie/${movieId}/count`);
+      return response.data.count;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Admin: Duyệt bình luận
   async approve(commentId) {
     try {
-      await this.api.put(`/admin/comments/${commentId}/approve`);
+      await this.api.put(`/api/admin/comments/${commentId}/approve`);
       return true;
     } catch (error) {
       throw this.handleError(error);
     }
   }
 
+  // Admin: Lấy tất cả bình luận
   async getAllAdmin(filters = {}) {
     try {
-      const { userId, movieId, isApproved, fromDate, toDate, sort = 'newest' } = filters;
-      const response = await this.api.get('/admin/comments', {
-        params: { userId, movieId, isApproved, fromDate, toDate, sort }
-      });
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-
-  async getByUser(userId) {
-    try {
-      const response = await this.api.get(`/user/${userId}`);
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-
-  async getCountByMovie(movieId) {
-    try {
-      const response = await this.api.get(`/movie/${movieId}/count`);
+      const response = await this.api.get('/api/admin/comments', { params: filters });
       return response.data;
     } catch (error) {
       throw this.handleError(error);

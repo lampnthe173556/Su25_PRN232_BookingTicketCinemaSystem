@@ -29,6 +29,24 @@ class ShowService {
     }
   }
 
+  async getByMovie(movieId) {
+    try {
+      const response = await this.api.get(`/by-movie/${movieId}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getByDate(date) {
+    try {
+      const response = await this.api.get(`/by-date/${date}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   async create(showData) {
     try {
       const response = await this.api.post('/', showData);

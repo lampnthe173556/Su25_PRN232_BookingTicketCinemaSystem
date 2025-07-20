@@ -6,7 +6,7 @@ const POSTER_HEIGHT = 320;
 const CARD_WIDTH = 240;
 const POSTER_PLACEHOLDER = '/default-poster.png';
 
-export default function MovieCard({ movie, isFavorite, loadingFavorite, onToggleFavorite, onBook }) {
+export default function MovieCard({ movie, isFavorite, loadingFavorite, onToggleFavorite, onBook, onViewDetail }) {
   // Lấy tối đa 2 thể loại, làm nổi bật
   const genreStr = movie.Genres && movie.Genres.length > 0
     ? movie.Genres.slice(0, 2).map(g => g.name).join(', ') + (movie.Genres.length > 2 ? ' ...' : '')
@@ -27,8 +27,10 @@ export default function MovieCard({ movie, isFavorite, loadingFavorite, onToggle
         justifyContent: 'space-between',
         padding: 0,
         background: '#fff',
-        position: 'relative'
+        position: 'relative',
+        cursor: 'pointer'
       }}
+      onClick={() => onViewDetail && onViewDetail(movie)}
       cover={
         <img
           alt={movie.title}

@@ -14,16 +14,12 @@ class MovieFavoriteService {
     this.api.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('token');
-        // Debug: kiểm tra token
-        console.log('Token from localStorage:', token);
         
         // Thử lấy token từ user object
         const userStr = localStorage.getItem('user');
         if (userStr) {
           const user = JSON.parse(userStr);
-          console.log('User from localStorage:', user);
           if (user && user.token) {
-            console.log('Token from user object:', user.token);
             config.headers.Authorization = `Bearer ${user.token}`;
           }
         }

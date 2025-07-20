@@ -9,8 +9,23 @@ class VoteService {
         'Content-Type': 'application/json',
       },
     });
+
+    // Add JWT token interceptor
+    this.api.interceptors.request.use(
+      (config) => {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.token) {
+          config.headers.Authorization = `Bearer ${user.token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
   }
 
+  // Tạo hoặc cập nhật đánh giá
   async createOrUpdate(voteData) {
     try {
       const response = await this.api.post('/', voteData);
@@ -20,6 +35,7 @@ class VoteService {
     }
   }
 
+  // Lấy đánh giá theo phim
   async getByMovie(movieId) {
     try {
       const response = await this.api.get(`/movie/${movieId}`);
@@ -29,6 +45,7 @@ class VoteService {
     }
   }
 
+  // Lấy đánh giá của user cho phim
   async getByUserAndMovie(userId, movieId) {
     try {
       const response = await this.api.get(`/user/${userId}/movie/${movieId}`);
@@ -38,24 +55,7 @@ class VoteService {
     }
   }
 
-  async update(voteId, voteData) {
-    try {
-      const response = await this.api.put(`/${voteId}`, voteData);
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-
-  async delete(voteId) {
-    try {
-      await this.api.delete(`/${voteId}`);
-      return true;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-
+  // Lấy thống kê đánh giá của phim
   async getMovieStats(movieId) {
     try {
       const response = await this.api.get(`/movie/${movieId}/stats`);
@@ -65,21 +65,30 @@ class VoteService {
     }
   }
 
-  async getAll(filters = {}) {
+  // Cập nhật đánh giá
+  async update(voteId, voteData) {
     try {
-      const { movieId, userId, minRating, maxRating, fromDate, toDate } = filters;
-      const response = await this.api.get('/all', {
-        params: { movieId, userId, minRating, maxRating, fromDate, toDate }
-      });
+      const response = await this.api.put(`/${voteId}`, voteData);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
     }
   }
 
-  async moderate(voteId, moderateData) {
+  // Xóa đánh giá
+  async delete(voteId) {
     try {
-      const response = await this.api.put(`/${voteId}/moderate`, moderateData);
+      await this.api.delete(`/${voteId}`);
+      return true;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Lấy tất cả đánh giá (admin)
+  async getAll(filters = {}) {
+    try {
+      const response = await this.api.get('/all', { params: filters });
       return response.data;
     } catch (error) {
       throw this.handleError(error);

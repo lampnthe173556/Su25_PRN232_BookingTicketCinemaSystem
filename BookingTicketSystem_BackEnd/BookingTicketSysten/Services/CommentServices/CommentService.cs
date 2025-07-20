@@ -35,7 +35,7 @@ namespace BookingTicketSysten.Services.CommentServices
                 MovieId = dto.MovieId,
                 CommentText = dto.CommentText,
                 ParentCommentId = parentCommentId,
-                IsApproved = false
+                IsApproved = true // Comments mới cần được admin duyệt
             };
             _context.Comments.Add(comment);
             await _context.SaveChangesAsync();
@@ -43,12 +43,17 @@ namespace BookingTicketSysten.Services.CommentServices
         }
         public async Task<IEnumerable<CommentDto>> GetCommentsByMovieAsync(int movieId, int page, int pageSize, string sort, bool includeReplies, bool approvedOnly, bool isAdmin)
         {
-            var query = _context.Comments.Where(c => c.MovieId == movieId && c.ParentCommentId == null);
+            var query = _context.Comments
+                .Include(c => c.User) // Include User information
+                .Where(c => c.MovieId == movieId && c.ParentCommentId == null);
+                
             if (approvedOnly && !isAdmin)
                 query = query.Where(c => c.IsApproved == true);
+                
             query = sort == "oldest" ? query.OrderBy(c => c.CommentId) : query.OrderByDescending(c => c.CommentId);
             var comments = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             var result = comments.Select(MapToDto).ToList();
+            
             if (includeReplies)
             {
                 foreach (var c in result)
@@ -58,14 +63,20 @@ namespace BookingTicketSysten.Services.CommentServices
             }
             return result;
         }
+        
         private async Task<List<CommentDto>> GetRepliesRecursive(int parentId, bool approvedOnly)
         {
-            var query = _context.Comments.Where(c => c.ParentCommentId == parentId);
+            var query = _context.Comments
+                .Include(c => c.User) // Include User information
+                .Where(c => c.ParentCommentId == parentId);
+                
             if (approvedOnly)
                 query = query.Where(c => c.IsApproved == true);
+                
             query = query.OrderBy(c => c.CommentId);
             var replies = await query.ToListAsync();
             var result = replies.Select(MapToDto).ToList();
+            
             foreach (var r in result)
             {
                 r.Replies = await GetRepliesRecursive(r.CommentId, approvedOnly);
@@ -126,7 +137,10 @@ namespace BookingTicketSysten.Services.CommentServices
                 MovieId = c.MovieId,
                 CommentText = c.CommentText,
                 ParentCommentId = c.ParentCommentId,
-                IsApproved = c.IsApproved
+                IsApproved = c.IsApproved,
+                CreatedAt = c.CreatedAt,
+                ModifiedAt = c.ModifiedAt,
+                UserName = c.User?.Name ?? "Unknown User" // Add user name
             };
         }
     }

@@ -52,6 +52,8 @@ const AppRoutes = () => (
     <Route element={<UserLayout />}>
       <Route path="/" element={<Home />} />
       <Route path="/movies/:id" element={<MovieDetail />} />
+      {/* Redirect từ /movie/ sang /movies/ để tương thích ngược */}
+      <Route path="/movie/:id" element={<MovieDetail />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -59,6 +61,8 @@ const AppRoutes = () => (
       <Route path="/booking" element={<PrivateRoute><Booking /></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/favorites" element={<PrivateRoute><FavoriteMovies /></PrivateRoute>} />
+      {/* Fallback route */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Route>
     {/* Admin routes dùng AdminLayout riêng */}
     <Route path="/admin" element={<AdminRoute><AdminLayout><Dashboard /></AdminLayout></AdminRoute>} />

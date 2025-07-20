@@ -1,7 +1,7 @@
 import React from "react";
 import { Layout, Menu, Button, Avatar, Dropdown } from "antd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { UserOutlined, LoginOutlined, LogoutOutlined, DashboardOutlined } from "@ant-design/icons";
+import { UserOutlined, LoginOutlined, LogoutOutlined, DashboardOutlined, HeartOutlined } from "@ant-design/icons";
 import { useAuth } from "../hooks/useAuth";
 
 const { Header } = Layout;
@@ -10,6 +10,7 @@ const menuItems = [
   { key: "home", label: <Link to="/">Trang chủ</Link> },
   { key: "movies", label: <Link to="/">Phim</Link> },
   { key: "booking", label: <Link to="/booking">Đặt vé</Link> },
+  { key: "favorites", label: <Link to="/favorites">Yêu thích</Link> },
 ];
 
 const adminMenuItems = [
@@ -30,6 +31,9 @@ const AppHeader = () => {
     <Menu>
       <Menu.Item key="profile">
         <Link to="/profile">Tài khoản</Link>
+      </Menu.Item>
+      <Menu.Item key="favorites" icon={<HeartOutlined />}>
+        <Link to="/favorites">Phim yêu thích</Link>
       </Menu.Item>
       <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={logout}>
         Đăng xuất

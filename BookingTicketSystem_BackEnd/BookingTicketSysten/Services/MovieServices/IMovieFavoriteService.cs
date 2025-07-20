@@ -1,4 +1,5 @@
 using BookingTicketSysten.Models.DTOs.MovieFavoriteDTOs;
+using BookingTicketSysten.Models.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ namespace BookingTicketSysten.Services.MovieServices
         Task<IEnumerable<MovieFavoriteDto>> GetFavoritesByUserAsync(int userId);
         Task<int> GetFavoriteCountByMovieAsync(int movieId);
         Task<IEnumerable<MovieFavoriteTopDto>> GetTopFavoritesAsync(int limit, DateTime? fromDate, DateTime? toDate);
+        Task<IEnumerable<MovieDto>> GetTopFavoriteMoviesAsync(int limit, DateTime? fromDate, DateTime? toDate);
         Task<IEnumerable<MovieFavoriteDto>> GetAllFavoritesAsync(int? userId, int? movieId, DateTime? fromDate, DateTime? toDate, string sort);
     }
 } 

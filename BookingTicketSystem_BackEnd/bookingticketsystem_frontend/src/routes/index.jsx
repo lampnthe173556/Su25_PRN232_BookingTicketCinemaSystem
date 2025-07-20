@@ -6,6 +6,7 @@ import Login from "../pages/common/Login";
 import Register from "../pages/common/Register";
 import Booking from "../pages/user/Booking";
 import Profile from "../pages/user/Profile";
+import FavoriteMovies from "../pages/user/FavoriteMovies";
 import Dashboard from "../pages/admin/Dashboard";
 import Users from "../pages/admin/Users";
 import Movies from "../pages/admin/Movies";
@@ -57,6 +58,7 @@ const AppRoutes = () => (
       {/* User routes */}
       <Route path="/booking" element={<PrivateRoute><Booking /></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+      <Route path="/favorites" element={<PrivateRoute><FavoriteMovies /></PrivateRoute>} />
     </Route>
     {/* Admin routes dùng AdminLayout riêng */}
     <Route path="/admin" element={<AdminRoute><AdminLayout><Dashboard /></AdminLayout></AdminRoute>} />

@@ -1,5 +1,6 @@
 using BookingTicketSysten.Models;
 using BookingTicketSysten.Models.DTOs.MovieFavoriteDTOs;
+using BookingTicketSysten.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -84,6 +85,32 @@ namespace BookingTicketSysten.Services.MovieServices
                 FavoriteCount = x.Count
             });
         }
+        
+        // Method mới để lấy top phim yêu thích với thông tin đầy đủ
+        public async Task<IEnumerable<MovieDto>> GetTopFavoriteMoviesAsync(int limit, DateTime? fromDate, DateTime? toDate)
+        {
+            var query = _context.MovieFavorites.AsQueryable();
+            if (fromDate.HasValue) query = query.Where(f => f.FavoriteTime >= fromDate);
+            if (toDate.HasValue) query = query.Where(f => f.FavoriteTime <= toDate);
+            
+            var topMovieIds = await query.GroupBy(f => f.MovieId)
+                .Select(g => new { MovieId = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .Take(limit)
+                .Select(x => x.MovieId)
+                .ToListAsync();
+                
+            var movies = await _context.Movies
+                .Where(m => topMovieIds.Contains(m.MovieId))
+                .Include(m => m.MovieGenres).ThenInclude(mg => mg.Genre)
+                .Include(m => m.MovieActors).ThenInclude(ma => ma.Person)
+                .Include(m => m.MovieDirectors).ThenInclude(md => md.Person)
+                .ToListAsync();
+                
+            // Sắp xếp theo thứ tự topMovieIds để giữ thứ tự yêu thích
+            return movies.OrderBy(m => topMovieIds.IndexOf(m.MovieId)).Select(MapToMovieDto);
+        }
+        
         public async Task<IEnumerable<MovieFavoriteDto>> GetAllFavoritesAsync(int? userId, int? movieId, DateTime? fromDate, DateTime? toDate, string sort)
         {
             var query = _context.MovieFavorites.AsQueryable();
@@ -108,6 +135,41 @@ namespace BookingTicketSysten.Services.MovieServices
                 UserId = favorite.UserId,
                 MovieId = favorite.MovieId,
                 FavoriteTime = favorite.FavoriteTime
+            };
+        }
+        
+        private static MovieDto MapToMovieDto(Movie m)
+        {
+            return new MovieDto
+            {
+                MovieId = m.MovieId,
+                Title = m.Title,
+                Description = m.Description,
+                Duration = m.Duration,
+                Language = m.Language,
+                ReleaseDate = m.ReleaseDate,
+                TrailerUrl = m.TrailerUrl,
+                PosterUrl = m.PosterUrl,
+                Rating = m.Rating,
+                Genres = m.MovieGenres?.Select(g => new GenreDto { GenreId = g.Genre.GenreId, Name = g.Genre.Name }).ToList() ?? new List<GenreDto>(),
+                Actors = m.MovieActors?.Select(a => new PersonDto
+                {
+                    PersonId = a.Person.PersonId,
+                    Name = a.Person.Name,
+                    DateOfBirth = a.Person.DateOfBirth,
+                    Biography = a.Person.Biography,
+                    Nationality = a.Person.Nationality,
+                    PhotoUrl = a.Person.PhotoUrl
+                }).ToList() ?? new List<PersonDto>(),
+                Directors = m.MovieDirectors?.Select(d => new PersonDto
+                {
+                    PersonId = d.Person.PersonId,
+                    Name = d.Person.Name,
+                    DateOfBirth = d.Person.DateOfBirth,
+                    Biography = d.Person.Biography,
+                    Nationality = d.Person.Nationality,
+                    PhotoUrl = d.Person.PhotoUrl
+                }).ToList() ?? new List<PersonDto>()
             };
         }
     }

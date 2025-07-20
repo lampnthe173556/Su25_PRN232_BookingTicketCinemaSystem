@@ -8,9 +8,10 @@ const POSTER_PLACEHOLDER = '/default-poster.png';
 
 export default function MovieCard({ movie, isFavorite, loadingFavorite, onToggleFavorite, onBook }) {
   // Lấy tối đa 2 thể loại, làm nổi bật
-  const genreStr = movie.genres && movie.genres.length > 0
-    ? movie.genres.slice(0, 2).map(g => g.name).join(', ') + (movie.genres.length > 2 ? ' ...' : '')
+  const genreStr = movie.Genres && movie.Genres.length > 0
+    ? movie.Genres.slice(0, 2).map(g => g.name).join(', ') + (movie.Genres.length > 2 ? ' ...' : '')
     : '';
+    
   return (
     <Card
       hoverable
@@ -75,12 +76,12 @@ export default function MovieCard({ movie, isFavorite, loadingFavorite, onToggle
         alignItems: 'center',
         gap: 6
       }}>
-        {movie.genres && movie.genres.length > 0 ? (
-          movie.genres.slice(0, 2).map(g => (
-            <Tag color="geekblue" key={g.id} style={{ fontWeight: 600, fontSize: 12, padding: '0 8px' }}>{g.name}</Tag>
+        {movie.Genres && movie.Genres.length > 0 ? (
+          movie.Genres.slice(0, 2).map(g => (
+            <Tag color="geekblue" key={g.genreId} style={{ fontWeight: 600, fontSize: 12, padding: '0 8px' }}>{g.name}</Tag>
           ))
         ) : <span style={{ opacity: 0 }}>NoTag</span>}
-        {movie.genres && movie.genres.length > 2 && <span style={{ color: '#888', fontSize: 13 }}>...</span>}
+        {movie.Genres && movie.Genres.length > 2 && <span style={{ color: '#888', fontSize: 13 }}>...</span>}
       </div>
       {/* Mô tả */}
       <div style={{

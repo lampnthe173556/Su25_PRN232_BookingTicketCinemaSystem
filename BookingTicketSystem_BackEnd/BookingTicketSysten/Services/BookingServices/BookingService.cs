@@ -25,6 +25,7 @@ namespace BookingTicketSysten.Services.BookingServices
                     UserName = b.User.Name,
                     MovieTitle = b.Show.Movie.Title,
                     ShowStartTime = b.Show.StartTime,
+                    ShowDate = b.Show.ShowDate,
                     NumberOfSeats = b.NumberOfSeats,
                     TotalPrice = b.TotalPrice,
                     Status = b.Status,
@@ -54,6 +55,7 @@ namespace BookingTicketSysten.Services.BookingServices
                 UserName = b.User.Name,
                 MovieTitle = b.Show.Movie.Title,
                 ShowStartTime = b.Show.StartTime,
+                ShowDate = b.Show.ShowDate,
                 NumberOfSeats = b.NumberOfSeats,
                 TotalPrice = b.TotalPrice,
                 Status = b.Status,
@@ -133,6 +135,34 @@ namespace BookingTicketSysten.Services.BookingServices
                     UserName = b.User.Name,
                     MovieTitle = b.Show.Movie.Title,
                     ShowStartTime = b.Show.StartTime,
+                    ShowDate = b.Show.ShowDate,
+                    NumberOfSeats = b.NumberOfSeats,
+                    TotalPrice = b.TotalPrice,
+                    Status = b.Status,
+                    Seats = b.BookedSeats.Select(bs => new SeatInfoDto
+                    {
+                        SeatId = bs.Seat.SeatId,
+                        RowNumber = bs.Seat.RowNumber,
+                        ColumnNumber = bs.Seat.ColumnNumber,
+                        SeatType = bs.Seat.SeatType
+                    }).ToList()
+                }).ToListAsync();
+        }
+
+        public async Task<IEnumerable<BookingDto>> GetBookingsByShowDateAsync(DateOnly date)
+        {
+            return await _context.Bookings
+                .Include(b => b.User)
+                .Include(b => b.Show).ThenInclude(s => s.Movie)
+                .Include(b => b.BookedSeats).ThenInclude(bs => bs.Seat)
+                .Where(b => b.Show.ShowDate == date)
+                .Select(b => new BookingDto
+                {
+                    BookingId = b.BookingId,
+                    UserName = b.User.Name,
+                    MovieTitle = b.Show.Movie.Title,
+                    ShowStartTime = b.Show.StartTime,
+                    ShowDate = b.Show.ShowDate,
                     NumberOfSeats = b.NumberOfSeats,
                     TotalPrice = b.TotalPrice,
                     Status = b.Status,
@@ -149,16 +179,24 @@ namespace BookingTicketSysten.Services.BookingServices
         public async Task<RevenueStatisticsDto> GetRevenueStatisticsAsync(DateTime? fromDate, DateTime? toDate)
         {
             var query = _context.Bookings.AsQueryable();
+
             if (fromDate.HasValue)
                 query = query.Where(b => b.CreatedAt >= fromDate.Value);
+
             if (toDate.HasValue)
                 query = query.Where(b => b.CreatedAt <= toDate.Value);
-            var totalRevenue = await query.Where(b => b.Status == "Confirmed").SumAsync(b => (decimal?)b.TotalPrice) ?? 0;
+
+            var totalRevenue = await query.SumAsync(b => b.TotalPrice);
             var totalBookings = await query.CountAsync();
+            var averageRevenue = totalBookings > 0 ? totalRevenue / totalBookings : 0;
+
             return new RevenueStatisticsDto
             {
                 TotalRevenue = totalRevenue,
-                TotalBookings = totalBookings
+                TotalBookings = totalBookings,
+                AverageRevenue = averageRevenue,
+                FromDate = fromDate,
+                ToDate = toDate
             };
         }
     }

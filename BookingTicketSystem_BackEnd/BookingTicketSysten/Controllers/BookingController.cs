@@ -32,6 +32,13 @@ namespace BookingTicketSysten.Controllers
             return Ok(bookings);
         }
 
+        [HttpGet("by-show-date/{date}")]
+        public async Task<IActionResult> GetByShowDate(DateOnly date)
+        {
+            var bookings = await _bookingService.GetBookingsByShowDateAsync(date);
+            return Ok(bookings);
+        }
+
         [HttpGet("revenue")]
         public async Task<IActionResult> GetRevenueStatistics([FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate)
         {

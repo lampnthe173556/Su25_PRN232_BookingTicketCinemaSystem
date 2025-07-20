@@ -39,7 +39,8 @@ namespace BookingTicketSysten.Services.PaymentServices
                     UserName = p.Booking.User.Name,
                     ShowId = p.Booking.ShowId,
                     MovieTitle = p.Booking.Show.Movie.Title,
-                    ShowTime = p.Booking.Show.StartTime
+                    ShowTime = p.Booking.Show.StartTime,
+                    ShowDate = p.Booking.Show.ShowDate
                 })
                 .ToListAsync();
 
@@ -69,7 +70,8 @@ namespace BookingTicketSysten.Services.PaymentServices
                     UserName = p.Booking.User.Name,
                     ShowId = p.Booking.ShowId,
                     MovieTitle = p.Booking.Show.Movie.Title,
-                    ShowTime = p.Booking.Show.StartTime
+                    ShowTime = p.Booking.Show.StartTime,
+                    ShowDate = p.Booking.Show.ShowDate
                 })
                 .FirstOrDefaultAsync();
 
@@ -99,7 +101,8 @@ namespace BookingTicketSysten.Services.PaymentServices
                     UserName = p.Booking.User.Name,
                     ShowId = p.Booking.ShowId,
                     MovieTitle = p.Booking.Show.Movie.Title,
-                    ShowTime = p.Booking.Show.StartTime
+                    ShowTime = p.Booking.Show.StartTime,
+                    ShowDate = p.Booking.Show.ShowDate
                 })
                 .ToListAsync();
 
@@ -129,7 +132,8 @@ namespace BookingTicketSysten.Services.PaymentServices
                     UserName = p.Booking.User.Name,
                     ShowId = p.Booking.ShowId,
                     MovieTitle = p.Booking.Show.Movie.Title,
-                    ShowTime = p.Booking.Show.StartTime
+                    ShowTime = p.Booking.Show.StartTime,
+                    ShowDate = p.Booking.Show.ShowDate
                 })
                 .ToListAsync();
 

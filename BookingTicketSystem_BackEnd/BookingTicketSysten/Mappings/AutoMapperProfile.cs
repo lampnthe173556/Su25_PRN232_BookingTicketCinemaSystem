@@ -22,6 +22,7 @@ namespace BookingTicketSysten.Mappings
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name))
                 .ForMember(dest => dest.MovieTitle, opt => opt.MapFrom(src => src.Show.Movie.Title))
                 .ForMember(dest => dest.ShowStartTime, opt => opt.MapFrom(src => src.Show.StartTime))
+                .ForMember(dest => dest.ShowDate, opt => opt.MapFrom(src => src.Show.ShowDate))
                 .ForMember(dest => dest.Seats, opt => opt.MapFrom(src => src.BookedSeats.Select(bs => bs.Seat)));
 
             CreateMap<CreateBookingDto, Booking>();

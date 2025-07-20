@@ -15,5 +15,6 @@ export const API_ENDPOINTS = {
   PAYMENTS: '/Payment',
   COMMENTS: '/Comment',
   MOVIE_FAVORITES: '/MovieFavorite',
-  SEATS: '/admin/Seat'
+  SEATS: '/admin/Seat',
+  PUBLIC_SEATS: '/PublicSeat'
 }; 

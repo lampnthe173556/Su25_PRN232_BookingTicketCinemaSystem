@@ -137,11 +137,11 @@ const FavoriteMovies = () => {
             </Button>
           </Empty>
         ) : (
-          <List
-            itemLayout="horizontal"
-            dataSource={favorites}
+    <List
+      itemLayout="horizontal"
+      dataSource={favorites}
             renderItem={movie => (
-              <List.Item
+        <List.Item
                 actions={[
                   <Button 
                     type="primary" 
@@ -161,8 +161,8 @@ const FavoriteMovies = () => {
                     Bỏ thích
                   </Button>
                 ]}
-              >
-                <List.Item.Meta
+        >
+          <List.Item.Meta
                   avatar={
                     <Avatar 
                       shape="square" 
@@ -213,14 +213,14 @@ const FavoriteMovies = () => {
                       )}
                     </div>
                   }
-                />
-              </List.Item>
-            )}
           />
+        </List.Item>
+      )}
+    />
         )}
       </Card>
-    </div>
-  );
+  </div>
+);
 };
 
 export default FavoriteMovies; 

@@ -24,6 +24,7 @@ import Votes from "../pages/admin/Votes";
 import AdminLayout from "../layouts/AdminLayout";
 import UserLayout from "../layouts/UserLayout";
 import ForgotPassword from "../pages/common/ForgotPassword";
+import BookingHistory from "../pages/user/BookingHistory";
 // Các page khác sẽ thêm sau
 
 const getUser = () => {
@@ -61,6 +62,7 @@ const AppRoutes = () => (
       <Route path="/booking" element={<PrivateRoute><Booking /></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/favorites" element={<PrivateRoute><FavoriteMovies /></PrivateRoute>} />
+      <Route path="/booking-history" element={<PrivateRoute><BookingHistory /></PrivateRoute>} />
       {/* Fallback route */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Route>

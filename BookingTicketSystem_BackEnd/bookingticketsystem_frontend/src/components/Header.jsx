@@ -11,6 +11,7 @@ const menuItems = [
   { key: "movies", label: <Link to="/">Phim</Link> },
   { key: "booking", label: <Link to="/booking">Đặt vé</Link> },
   { key: "favorites", label: <Link to="/favorites">Yêu thích</Link> },
+  { key: "booking-history", label: <Link to="/booking-history">Lịch sử đặt vé</Link> },
 ];
 
 const adminMenuItems = [
@@ -34,6 +35,9 @@ const AppHeader = () => {
       </Menu.Item>
       <Menu.Item key="favorites" icon={<HeartOutlined />}>
         <Link to="/favorites">Phim yêu thích</Link>
+      </Menu.Item>
+      <Menu.Item key="booking-history">
+        <Link to="/booking-history">Lịch sử đặt vé</Link>
       </Menu.Item>
       <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={logout}>
         Đăng xuất

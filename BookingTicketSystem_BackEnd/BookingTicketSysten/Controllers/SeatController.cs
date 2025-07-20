@@ -59,19 +59,63 @@ namespace BookingTicketSysten.Controllers
                 return NotFound(result);
             if (result.Contains("exists"))
                 return BadRequest(result);
-
-            return Ok(result);
+            return Ok(new { message = result });
         }
 
         [HttpDelete("{seatId}")]
-        public async Task<IActionResult> DeleteSeat(int seatId)
+        public async Task<IActionResult> Delete(int seatId)
         {
             var result = await _seatService.DeleteSeatAsync(seatId);
+            if (result.Contains("not"))
+                return NotFound(new { message = result });
+            return Ok(new { message = result });
+        }
 
-            if (result == "Seat not found.")
-                return NotFound(result);
+        // Thêm endpoints mới cho booking
+        [HttpGet("by-hall/{hallId}")]
+        public async Task<IActionResult> GetByHall(int hallId)
+        {
+            try
+            {
+                var seats = await _seatService.GetSeatsByHallAsync(hallId);
+                return Ok(seats);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
+        }
 
-            return Ok(result);
+        [HttpGet("booked-by-show/{showId}")]
+        public async Task<IActionResult> GetBookedSeatsByShow(int showId)
+        {
+            try
+            {
+                var bookedSeatIds = await _seatService.GetBookedSeatIdsByShowAsync(showId);
+                return Ok(bookedSeatIds);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
+        }
+
+        [HttpGet("availability/{showId}")]
+        public async Task<IActionResult> GetSeatAvailability(int showId)
+        {
+            try
+            {
+                var availability = await _seatService.GetSeatAvailabilityAsync(showId);
+                return Ok(availability);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
         }
     }
 }

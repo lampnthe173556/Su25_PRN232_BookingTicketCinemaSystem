@@ -47,7 +47,7 @@ namespace BookingTicketSysten.Controllers
             // Lấy userId từ token
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
-            {
+        {
                 return Unauthorized("Không thể xác định người dùng");
             }
             
@@ -74,7 +74,7 @@ namespace BookingTicketSysten.Controllers
             // Lấy userId từ token
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
-            {
+        {
                 return Unauthorized("Không thể xác định người dùng");
             }
             
@@ -90,7 +90,7 @@ namespace BookingTicketSysten.Controllers
             // Lấy userId từ token
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
-            {
+        {
                 return Unauthorized("Không thể xác định người dùng");
             }
             

@@ -37,6 +37,7 @@ const Showtimes = () => {
   const [form] = Form.useForm();
   const [detailVisible, setDetailVisible] = useState(false);
   const [detailShow, setDetailShow] = useState(null);
+  const [selectedMovie, setSelectedMovie] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -63,6 +64,7 @@ const Showtimes = () => {
   const handleAdd = () => {
     setEditingShow(null);
     form.resetFields();
+    setSelectedMovie(null); // Reset selected movie
     setModalVisible(true);
   };
 
@@ -71,10 +73,12 @@ const Showtimes = () => {
     form.setFieldsValue({
       movieId: record.movieId,
       hallId: record.hallId,
-      startTime: record.startTime,
-      endTime: record.endTime,
+      date: record.startTime ? dayjs(record.startTime.split('T')[0], 'YYYY-MM-DD') : null,
+      startTime: record.startTime ? dayjs(record.startTime, 'YYYY-MM-DDTHH:mm:ss') : null,
+      endTime: record.endTime ? dayjs(record.endTime, 'YYYY-MM-DDTHH:mm:ss') : null,
       ticketPrice: record.ticketPrice
     });
+    setSelectedMovie(null); // Reset selected movie
     setModalVisible(true);
   };
 
@@ -92,15 +96,43 @@ const Showtimes = () => {
     }
   };
 
+  const handleMovieChange = (movieId) => {
+    const movie = movies.find(m => m.movieId === movieId);
+    setSelectedMovie(movie);
+    // Nếu đã chọn startTime thì tự động tính endTime
+    const startTime = form.getFieldValue('startTime');
+    if (startTime && movie && movie.duration) {
+      const endTime = startTime.clone().add(movie.duration, 'minute');
+      form.setFieldsValue({ endTime });
+    }
+  };
+
+  const handleStartTimeChange = (startTime) => {
+    if (selectedMovie && selectedMovie.duration) {
+      const endTime = startTime.clone().add(selectedMovie.duration, 'minute');
+      form.setFieldsValue({ endTime });
+    } else {
+      form.setFieldsValue({ endTime: null });
+    }
+  };
+
   const handleSubmit = async (values) => {
     try {
+      const date = values.date.format('YYYY-MM-DD');
+      // Tính lại endTime nếu cần
+      let endTime = values.endTime;
+      if (selectedMovie && selectedMovie.duration && values.startTime) {
+        endTime = values.startTime.clone().add(selectedMovie.duration, 'minute');
+      }
+      const startTime = values.startTime ? `${date}T${values.startTime.format('HH:mm')}:00` : null;
+      const endTimeStr = endTime ? `${date}T${endTime.format('HH:mm')}:00` : null;
+      const showDate = date;
       const showData = new Show({
         ...values,
-        startTime: values.startTime ? values.startTime.format('HH:mm') : null,
-        endTime: values.endTime ? values.endTime.format('HH:mm') : null,
-        date: values.date ? values.date.format('YYYY-MM-DD') : null,
+        startTime,
+        endTime: endTimeStr,
+        showDate,
       });
-      
       if (editingShow) {
         await showService.update(editingShow.showId, showData.toUpdateDto());
         Toast.success('Cập nhật suất chiếu thành công');
@@ -108,7 +140,6 @@ const Showtimes = () => {
         await showService.create(showData.toCreateDto());
         Toast.success('Thêm suất chiếu thành công');
       }
-      
       setModalVisible(false);
       loadData();
     } catch (error) {
@@ -272,9 +303,9 @@ const Showtimes = () => {
                 { required: true, message: 'Vui lòng chọn phim!' }
               ]}
             >
-              <Select placeholder="Chọn phim">
+              <Select placeholder="Chọn phim" onChange={handleMovieChange}>
                 {movies.map(movie => (
-                  <Option key={movie.id} value={movie.id}>
+                  <Option key={movie.movieId} value={movie.movieId}>
                     {movie.title}
                   </Option>
                 ))}
@@ -290,28 +321,33 @@ const Showtimes = () => {
               <Select placeholder="Chọn phòng chiếu">
                 {cinemaHalls.map(hall => (
                   <Option key={hall.cinemaHallId} value={hall.cinemaHallId}>
-                    {hall.name}
+                    {hall.cinemaName ? `${hall.name} - ${hall.cinemaName}` : hall.name}
                   </Option>
                 ))}
               </Select>
             </Form.Item>
             <Form.Item
+              name="date"
+              label="Ngày chiếu"
+              rules={[{ required: true, message: 'Vui lòng chọn ngày chiếu!' }]}
+            >
+              <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item
               name="startTime"
               label="Giờ bắt đầu"
               rules={[
-                { required: true, message: 'Vui lòng nhập giờ bắt đầu!' }
+                { required: true, message: 'Vui lòng chọn giờ bắt đầu!' }
               ]}
             >
-              <Input placeholder="Nhập giờ bắt đầu (HH:mm)" />
+              <TimePicker format="HH:mm" style={{ width: '100%' }} onChange={handleStartTimeChange} />
             </Form.Item>
+            {/* Ẩn input endTime, chỉ hiển thị read-only */}
             <Form.Item
               name="endTime"
               label="Giờ kết thúc"
-              rules={[
-                { required: true, message: 'Vui lòng nhập giờ kết thúc!' }
-              ]}
             >
-              <Input placeholder="Nhập giờ kết thúc (HH:mm)" />
+              <TimePicker format="HH:mm" style={{ width: '100%' }} disabled />
             </Form.Item>
             <Form.Item
               name="ticketPrice"

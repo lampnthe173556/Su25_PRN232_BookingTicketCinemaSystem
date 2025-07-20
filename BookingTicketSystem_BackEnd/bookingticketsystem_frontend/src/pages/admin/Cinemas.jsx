@@ -304,7 +304,7 @@ const Cinemas = () => {
             >
               <Select placeholder="Chọn thành phố">
                 {cities.map(city => (
-                  <Option key={city.id} value={city.id}>
+                  <Option key={city.cityId} value={city.cityId}>
                     {city.name}
                   </Option>
                 ))}

@@ -391,57 +391,44 @@ const MovieDetail = () => {
             )}
 
             {/* Lịch chiếu */}
-            <Title level={4}>Lịch chiếu</Title>
-            
-            
-            
-            {showsLoading ? (
-              <div style={{ textAlign: 'center', padding: '20px' }}>Đang tải lịch chiếu...</div>
-            ) : shows && shows.length > 0 ? (
-              <Row gutter={[8, 8]}>
-                {shows.map((show) => (
-                  <Col key={show.showId} xs={24} sm={12} md={8}>
-                    <Card size="small" bordered>
-                      <div>
-                        <Tag color="blue">
-                          {show.showDate ? new Date(show.showDate).toLocaleDateString('vi-VN') : 'Chưa có ngày'}
-                        </Tag>
-                        <Tag color="green">
-                          {show.startTime ? new Date(show.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Chưa có giờ'}
-                        </Tag>
+            <div style={{ marginBottom: 24 }}>
+              <Title level={4}>Lịch chiếu</Title>
+              {shows.length > 0 ? (
+                <div>
+                  {shows.map((show) => (
+                    <Card 
+                      key={show.showId} 
+                      style={{ marginBottom: 16 }}
+                      actions={[
+                        <Button 
+                          type="primary" 
+                          onClick={() => navigate(`/booking?movieId=${movieId}&showtimeId=${show.showId}`)}
+                        >
+                          Đặt vé
+                        </Button>
+                      ]}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div><strong>Ngày:</strong> {new Date(show.startTime).toLocaleDateString('vi-VN')}</div>
+                          <div><strong>Giờ:</strong> {new Date(show.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
+                          <div><strong>Phòng:</strong> {show.hallName}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: 18, fontWeight: 'bold', color: '#1890ff' }}>
+                            {show.ticketPrice.toLocaleString('vi-VN')} VNĐ
+                          </div>
+                        </div>
                       </div>
-                      <div style={{ marginTop: 4 }}>
-                        <strong>Phòng:</strong> {show.hallName || 'Chưa có thông tin'}
-                      </div>
-                      <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
-                        <strong>Giá vé:</strong> {show.ticketPrice ? show.ticketPrice.toLocaleString('vi-VN') + ' VNĐ' : 'Chưa có giá'}
-                      </div>
-                      <Button
-                        type="primary"
-                        block
-                        style={{ marginTop: 8 }}
-                        onClick={() => handleBookShow(show)}
-                      >
-                        Đặt vé
-                      </Button>
                     </Card>
-                  </Col>
-                ))}
-              </Row>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
-                <div>Chưa có lịch chiếu cho phim này</div>
-                {user && user.role?.toLowerCase() === 'admin' && (
-                  <Button 
-                    type="dashed" 
-                    style={{ marginTop: 8 }}
-                    onClick={handleSeedSampleData}
-                  >
-                    Tạo dữ liệu mẫu (Admin)
-                  </Button>
-                )}
-              </div>
-            )}
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
+                  Chưa có lịch chiếu cho phim này
+                </div>
+              )}
+            </div>
 
             {/* Vote & Comment */}
             <div style={{ marginTop: 32 }}>

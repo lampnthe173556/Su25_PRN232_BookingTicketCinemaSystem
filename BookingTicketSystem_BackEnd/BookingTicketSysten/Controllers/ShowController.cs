@@ -33,6 +33,13 @@ namespace BookingTicketSysten.Controllers
             return Ok(shows);
         }
 
+        [HttpGet("by-date/{date}")]
+        public async Task<IActionResult> GetByDate(DateOnly date)
+        {
+            var shows = await _showService.GetShowsByDateAsync(date);
+            return Ok(shows);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateShowDto dto)
         {

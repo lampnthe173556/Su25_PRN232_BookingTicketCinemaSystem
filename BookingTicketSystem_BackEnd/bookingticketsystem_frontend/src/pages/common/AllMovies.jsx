@@ -146,20 +146,19 @@ const AllMovies = () => {
         <Empty description="Không có phim nào" />
       ) : (
         <>
-          <Row gutter={[24, 24]}>
+          <div className="movie-list-grid-5">
             {movies.map(movie => (
-              <Col xs={24} sm={12} md={8} lg={6} key={movie.movieId}>
-                <MovieCard
-                  movie={movie}
-                  isFavorite={favoriteIds.includes(movie.movieId)}
-                  loadingFavorite={loadingFavorite === movie.movieId}
-                  onToggleFavorite={handleToggleFavorite}
-                  onViewDetail={handleViewDetail}
-                  onBook={handleBook}
-                />
-              </Col>
+              <MovieCard
+                key={movie.movieId}
+                movie={movie}
+                isFavorite={favoriteIds.includes(movie.movieId)}
+                loadingFavorite={loadingFavorite === movie.movieId}
+                onToggleFavorite={handleToggleFavorite}
+                onViewDetail={handleViewDetail}
+                onBook={handleBook}
+              />
             ))}
-          </Row>
+          </div>
           <div style={{ textAlign: 'center', marginTop: 32 }}>
             <Pagination
               current={page}

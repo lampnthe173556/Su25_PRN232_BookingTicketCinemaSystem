@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Row, Col, Card, Input, Select, Typography, Spin, Carousel, Tag, Button, Rate, Divider, Empty } from "antd";
+import { Row, Col, Card, Input, Select, Typography, Spin, Carousel, Tag, Button, Rate, Divider, Empty, Pagination } from "antd";
 import { useNavigate } from "react-router-dom";
 import { movieService, genreService, movieFavoriteService } from "../../services";
 import Footer from "../../components/Footer";
@@ -25,6 +25,13 @@ const Home = () => {
   const [genre, setGenre] = useState("");
   const [favoriteIds, setFavoriteIds] = useState([]);
   const [loadingFavoriteId, setLoadingFavoriteId] = useState(null);
+
+  // Thêm state cho phân trang từng mục
+  const [topPage, setTopPage] = useState(1);
+  const [nowPage, setNowPage] = useState(1);
+  const [soonPage, setSoonPage] = useState(1);
+  const [allPage, setAllPage] = useState(1);
+  const PAGE_SIZE = 5;
 
   useEffect(() => {
     async function fetchData() {
@@ -142,54 +149,84 @@ const Home = () => {
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 16px' }}>
         {/* Top phim yêu thích */}
         <Title level={3} style={{ marginTop: 24 }}>Top phim được yêu thích</Title>
-        <Row gutter={[24, 24]}>
-          {topMovies.length === 0 ? <Col span={24}><Empty description="Không có dữ liệu" /></Col> : topMovies.map(movie => (
-            <Col xs={24} sm={12} md={8} lg={6} key={movie.movieId}>
-              <MovieCard 
-                movie={movie} 
-                isFavorite={favoriteIds.includes(movie.movieId)} 
-                loadingFavorite={loadingFavoriteId === movie.movieId} 
-                onToggleFavorite={handleToggleFavorite} 
-                onBook={handleBook} 
-                onViewDetail={handleViewMovie}
-              />
-            </Col>
+        <div className="movie-list-grid-5">
+          {topMovies.length === 0 ? <div style={{gridColumn: 'span 5'}}><Empty description="Không có dữ liệu" /></div> : topMovies.slice((topPage-1)*PAGE_SIZE, topPage*PAGE_SIZE).map(movie => (
+            <MovieCard 
+              key={movie.movieId}
+              movie={movie} 
+              isFavorite={favoriteIds.includes(movie.movieId)} 
+              loadingFavorite={loadingFavoriteId === movie.movieId} 
+              onToggleFavorite={handleToggleFavorite} 
+              onBook={handleBook} 
+              onViewDetail={handleViewMovie}
+            />
           ))}
-        </Row>
+        </div>
+        {topMovies.length > PAGE_SIZE && (
+          <div style={{textAlign:'center', marginTop:12}}>
+            <Pagination
+              current={topPage}
+              pageSize={PAGE_SIZE}
+              total={topMovies.length}
+              onChange={setTopPage}
+              showSizeChanger={false}
+            />
+          </div>
+        )}
 
         {/* Phim đang chiếu */}
         <Divider orientation="left" style={{ marginTop: 40 }}>Phim đang chiếu</Divider>
-        <Row gutter={[24, 24]}>
-          {nowShowing.length === 0 ? <Col span={24}><Empty description="Không có phim đang chiếu" /></Col> : nowShowing.slice(0, 8).map(movie => (
-            <Col xs={24} sm={12} md={8} lg={6} key={movie.movieId}>
-              <MovieCard 
-                movie={movie} 
-                isFavorite={favoriteIds.includes(movie.movieId)} 
-                loadingFavorite={loadingFavoriteId === movie.movieId} 
-                onToggleFavorite={handleToggleFavorite} 
-                onBook={handleBook} 
-                onViewDetail={handleViewMovie}
-              />
-            </Col>
+        <div className="movie-list-grid-5">
+          {nowShowing.length === 0 ? <div style={{gridColumn: 'span 5'}}><Empty description="Không có phim đang chiếu" /></div> : nowShowing.slice((nowPage-1)*PAGE_SIZE, nowPage*PAGE_SIZE).map(movie => (
+            <MovieCard 
+              key={movie.movieId}
+              movie={movie} 
+              isFavorite={favoriteIds.includes(movie.movieId)} 
+              loadingFavorite={loadingFavoriteId === movie.movieId} 
+              onToggleFavorite={handleToggleFavorite} 
+              onBook={handleBook} 
+              onViewDetail={handleViewMovie}
+            />
           ))}
-        </Row>
+        </div>
+        {nowShowing.length > PAGE_SIZE && (
+          <div style={{textAlign:'center', marginTop:12}}>
+            <Pagination
+              current={nowPage}
+              pageSize={PAGE_SIZE}
+              total={nowShowing.length}
+              onChange={setNowPage}
+              showSizeChanger={false}
+            />
+          </div>
+        )}
 
         {/* Phim sắp chiếu */}
         <Divider orientation="left" style={{ marginTop: 40 }}>Phim sắp chiếu</Divider>
-        <Row gutter={[24, 24]}>
-          {comingSoon.length === 0 ? <Col span={24}><Empty description="Không có phim sắp chiếu" /></Col> : comingSoon.slice(0, 8).map(movie => (
-            <Col xs={24} sm={12} md={8} lg={6} key={movie.movieId}>
-              <MovieCard 
-                movie={movie} 
-                isFavorite={favoriteIds.includes(movie.movieId)} 
-                loadingFavorite={loadingFavoriteId === movie.movieId} 
-                onToggleFavorite={handleToggleFavorite} 
-                onBook={handleBook} 
-                onViewDetail={handleViewMovie}
-              />
-            </Col>
+        <div className="movie-list-grid-5">
+          {comingSoon.length === 0 ? <div style={{gridColumn: 'span 5'}}><Empty description="Không có phim sắp chiếu" /></div> : comingSoon.slice((soonPage-1)*PAGE_SIZE, soonPage*PAGE_SIZE).map(movie => (
+            <MovieCard 
+              key={movie.movieId}
+              movie={movie} 
+              isFavorite={favoriteIds.includes(movie.movieId)} 
+              loadingFavorite={loadingFavoriteId === movie.movieId} 
+              onToggleFavorite={handleToggleFavorite} 
+              onBook={handleBook} 
+              onViewDetail={handleViewMovie}
+            />
           ))}
-        </Row>
+        </div>
+        {comingSoon.length > PAGE_SIZE && (
+          <div style={{textAlign:'center', marginTop:12}}>
+            <Pagination
+              current={soonPage}
+              pageSize={PAGE_SIZE}
+              total={comingSoon.length}
+              onChange={setSoonPage}
+              showSizeChanger={false}
+            />
+          </div>
+        )}
 
         {/* Tìm kiếm & filter thể loại */}
         <Divider orientation="left" style={{ marginTop: 40 }}>Tất cả phim</Divider>
@@ -215,22 +252,32 @@ const Home = () => {
             </Select>
           </Col>
         </Row>
-        <Row gutter={[24, 24]}>
-          {loading ? <Col span={24} style={{ textAlign: 'center' }}><Spin size="large" /></Col> :
-            filteredMovies.length === 0 ? <Col span={24}><Empty description="Không tìm thấy phim phù hợp." /></Col> :
-              filteredMovies.map((movie) => (
-                <Col xs={24} sm={12} md={8} lg={6} key={movie.movieId}>
-                  <MovieCard 
-                    movie={movie} 
-                    isFavorite={favoriteIds.includes(movie.movieId)} 
-                    loadingFavorite={loadingFavoriteId === movie.movieId} 
-                    onToggleFavorite={handleToggleFavorite} 
-                    onBook={handleBook} 
-                    onViewDetail={handleViewMovie}
-                  />
-                </Col>
+        <div className="movie-list-grid-5">
+          {loading ? <div style={{gridColumn: 'span 5', textAlign: 'center'}}><Spin size="large" /></div> :
+            filteredMovies.length === 0 ? <div style={{gridColumn: 'span 5'}}><Empty description="Không tìm thấy phim phù hợp." /></div> :
+              filteredMovies.slice((allPage-1)*PAGE_SIZE, allPage*PAGE_SIZE).map((movie) => (
+                <MovieCard 
+                  key={movie.movieId}
+                  movie={movie} 
+                  isFavorite={favoriteIds.includes(movie.movieId)} 
+                  loadingFavorite={loadingFavoriteId === movie.movieId} 
+                  onToggleFavorite={handleToggleFavorite} 
+                  onBook={handleBook} 
+                  onViewDetail={handleViewMovie}
+                />
               ))}
-        </Row>
+        </div>
+        {filteredMovies.length > PAGE_SIZE && (
+          <div style={{textAlign:'center', marginTop:12}}>
+            <Pagination
+              current={allPage}
+              pageSize={PAGE_SIZE}
+              total={filteredMovies.length}
+              onChange={setAllPage}
+              showSizeChanger={false}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ namespace BookingTicketSysten.Models.DTOs
         [Required]
         public string Language { get; set; }
         public DateOnly? ReleaseDate { get; set; }
-        public string TrailerUrl { get; set; }
+        public string? TrailerUrl { get; set; }
         public decimal? Rating { get; set; }
         public IFormFile? Poster { get; set; }
         public List<int> GenreIds { get; set; }

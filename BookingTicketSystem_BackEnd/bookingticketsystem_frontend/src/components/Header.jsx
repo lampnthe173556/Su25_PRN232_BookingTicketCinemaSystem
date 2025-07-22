@@ -28,6 +28,11 @@ const AppHeader = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   const userMenu = (
     <Menu>
       <Menu.Item key="profile">
@@ -42,7 +47,7 @@ const AppHeader = () => {
       <Menu.Item key="booking-history">
         <Link to="/booking-history">Lịch sử đặt vé</Link>
       </Menu.Item>
-      <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={logout}>
+      <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
         Đăng xuất
       </Menu.Item>
     </Menu>

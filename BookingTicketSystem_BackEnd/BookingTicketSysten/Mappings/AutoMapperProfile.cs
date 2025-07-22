@@ -29,6 +29,12 @@ namespace BookingTicketSysten.Mappings
 
             // Seat mapping to SeatInfoDto (used inside BookingDto)
             CreateMap<Seat, SeatInfoDto>();
+
+            // User mapping
+            CreateMap<User, BookingTicketSysten.Models.DTOs.UserDTOs.UserDisplayDTOs>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.RoleId))
+                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role != null ? src.Role.RoleName : null));
         }
     }
 }

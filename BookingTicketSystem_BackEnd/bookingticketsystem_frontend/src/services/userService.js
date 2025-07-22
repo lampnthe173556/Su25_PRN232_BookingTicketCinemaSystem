@@ -49,9 +49,13 @@ class UserService {
     try {
       const formData = new FormData();
       Object.keys(userData).forEach(key => {
-        formData.append(key, userData[key]);
+        // Đảm bảo isActive là boolean, không phải string
+        if (key === 'isActive') {
+          formData.append(key, userData[key] === true || userData[key] === 'true' ? 'true' : 'false');
+        } else {
+          formData.append(key, userData[key]);
+        }
       });
-      
       const response = await this.api.put(`/${email}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });

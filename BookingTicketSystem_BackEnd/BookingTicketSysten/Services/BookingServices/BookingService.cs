@@ -7,9 +7,11 @@ namespace BookingTicketSysten.Services.BookingServices
     public class BookingService : IBookingService
     {
         private readonly MovieTicketBookingSystemContext _context;
+        private readonly AutoMapper.IMapper _mapper;
 
-        public BookingService(MovieTicketBookingSystemContext context)
+        public BookingService(AutoMapper.IMapper mapper, MovieTicketBookingSystemContext context)
         {
+            _mapper = mapper;
             _context = context;
         }
 
@@ -196,6 +198,8 @@ namespace BookingTicketSysten.Services.BookingServices
         {
             var query = _context.Bookings.AsQueryable();
 
+            query = query.Where(b => b.Status != "Cancelled");
+
             if (fromDate.HasValue)
                 query = query.Where(b => b.CreatedAt >= fromDate.Value);
 
@@ -214,6 +218,72 @@ namespace BookingTicketSysten.Services.BookingServices
                 FromDate = fromDate,
                 ToDate = toDate
             };
+        }
+
+        public async Task<IEnumerable<TopMovieDto>> GetTopMoviesAsync(int topN = 5)
+        {
+            // Lấy top phim theo tổng doanh thu
+            var topMovies = await _context.Bookings
+                .Where(b => b.Status != "Cancelled")
+                .GroupBy(b => b.Show.Movie.Title)
+                .Select(g => new TopMovieDto
+                {
+                    MovieTitle = g.Key,
+                    TotalRevenue = g.Sum(b => b.TotalPrice),
+                    TicketsSold = g.Sum(b => b.NumberOfSeats)
+                })
+                .OrderByDescending(m => m.TotalRevenue)
+                .Take(topN)
+                .ToListAsync();
+            return topMovies;
+        }
+
+        public async Task<IEnumerable<TopUserDto>> GetTopUsersAsync(int topN = 5)
+        {
+            // Lấy top user theo số vé đã mua
+            var topUsers = await _context.Bookings
+                .Where(b => b.Status != "Cancelled")
+                .GroupBy(b => b.User.Name)
+                .Select(g => new TopUserDto
+                {
+                    UserName = g.Key,
+                    TicketsBought = g.Sum(b => b.NumberOfSeats),
+                    TotalSpent = g.Sum(b => b.TotalPrice)
+                })
+                .OrderByDescending(u => u.TicketsBought)
+                .Take(topN)
+                .ToListAsync();
+            return topUsers;
+        }
+
+        public async Task<IEnumerable<BookingDto>> GetRecentBookingsAsync(int topN = 5)
+        {
+            // Lấy các booking mới nhất
+            var bookings = await _context.Bookings
+                .Where(b => b.Status != "Cancelled")
+                .OrderByDescending(b => b.CreatedAt)
+                .Take(topN)
+                .ToListAsync();
+            return _mapper.Map<IEnumerable<BookingDto>>(bookings);
+        }
+
+        public async Task<List<DailyRevenueDto>> GetDailyRevenueAsync(DateTime fromDate, DateTime toDate)
+        {
+            var result = new List<DailyRevenueDto>();
+            var days = (toDate.Date - fromDate.Date).Days + 1;
+            for (int i = 0; i < days; i++)
+            {
+                var day = fromDate.Date.AddDays(i);
+                var revenue = await _context.Bookings
+                    .Where(b => b.Status != "Cancelled" && b.CreatedAt.Date == day)
+                    .SumAsync(b => (decimal?)b.TotalPrice) ?? 0;
+                result.Add(new DailyRevenueDto
+                {
+                    Date = day.ToString("yyyy-MM-dd"),
+                    Revenue = revenue
+                });
+            }
+            return result;
         }
     }
 }

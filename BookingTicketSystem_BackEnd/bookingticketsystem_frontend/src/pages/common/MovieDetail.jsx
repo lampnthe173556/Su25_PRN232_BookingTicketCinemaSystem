@@ -402,7 +402,7 @@ const MovieDetail = () => {
                 <iframe
                   width="100%"
                   height="250"
-                  src={movie.trailerUrl}
+                  src={getEmbedUrl(movie.trailerUrl)}
                   title="Trailer"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -583,6 +583,18 @@ const MovieDetail = () => {
     </div>
   );
 };
+
+// Hàm chuyển link YouTube sang dạng nhúng
+function getEmbedUrl(url) {
+  if (!url) return '';
+  if (url.includes('/embed/')) return url;
+  const match = url.match(/[?&]v=([\w-]+)/);
+  if (match) return `https://www.youtube.com/embed/${match[1]}`;
+  // Hỗ trợ cả link youtu.be/abc123
+  const short = url.match(/youtu\.be\/([\w-]+)/);
+  if (short) return `https://www.youtube.com/embed/${short[1]}`;
+  return url;
+}
 
 // Component con để phân trang lịch chiếu
 function ShowtimesPaginated({ shows, movieId, navigate }) {

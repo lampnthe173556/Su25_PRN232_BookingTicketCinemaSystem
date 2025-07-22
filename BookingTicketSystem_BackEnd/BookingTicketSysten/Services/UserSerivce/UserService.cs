@@ -91,13 +91,16 @@ namespace BookingTicketSysten.Services.UserSerivce
 
         public async Task<UserDisplayDTOs?> UpdateUserAsync(string email, UserUpdateDTOs classDto)
         {
-            var user = await _context.Users
-               .SingleOrDefaultAsync(x => x.Email == email);
+            var user = await _context.Users.SingleOrDefaultAsync(x => x.Email == email);
             if (user == null)
             {
                 return null;
             }
-            user = _mapper.Map<User>(classDto);
+            // Cập nhật từng trường nếu có
+            if (!string.IsNullOrEmpty(classDto.Name)) user.Name = classDto.Name;
+            if (!string.IsNullOrEmpty(classDto.Phone)) user.Phone = classDto.Phone;
+            if (!string.IsNullOrEmpty(classDto.PasswordHash)) user.PasswordHash = PasswordHassing.ComputeSha256Hash(classDto.PasswordHash);
+            if (classDto.IsActive.HasValue) user.IsActive = classDto.IsActive.Value;
             user.ModifiedAt = DateTime.Now;
             await _context.SaveChangesAsync();
             return _mapper.Map<UserDisplayDTOs?>(user);

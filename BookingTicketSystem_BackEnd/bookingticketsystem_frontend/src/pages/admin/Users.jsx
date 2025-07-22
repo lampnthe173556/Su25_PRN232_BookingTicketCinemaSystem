@@ -14,7 +14,7 @@ import {
   Tag,
   InputNumber
 } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined, LockOutlined, UnlockOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import userService from '../../services/userService';
 import { User } from '../../models/User';
@@ -42,7 +42,20 @@ const Users = () => {
     setLoading(true);
     try {
       const data = await userService.getAll();
-      setUsers(data);
+      // Chỉ giữ lại các trường đúng với DTO UserDisplayDTOs
+      const filtered = (data || []).map(u => ({
+        userId: u.userId,
+        name: u.name,
+        email: u.email,
+        phone: u.phone,
+        loyaltyPoints: u.loyaltyPoints,
+        createdAt: u.createdAt,
+        modifiedAt: u.modifiedAt,
+        isActive: u.isActive,
+        roleId: u.roleId,
+        roleName: u.roleName,
+      }));
+      setUsers(filtered);
     } catch (error) {
       Toast.error('Không thể tải danh sách người dùng: ' + error.message);
     } finally {
@@ -149,6 +162,17 @@ const Users = () => {
     }
   };
 
+  // Hàm toggle trạng thái hoạt động user
+  const handleToggleActive = async (user) => {
+    try {
+      await userService.update(user.email, { isActive: !user.isActive });
+      Toast.success(`${user.isActive ? 'Khóa' : 'Mở khóa'} người dùng thành công`);
+      loadUsers();
+    } catch (error) {
+      Toast.error('Không thể cập nhật trạng thái: ' + error.message);
+    }
+  };
+
   const columns = [
     {
       title: 'ID',
@@ -174,24 +198,14 @@ const Users = () => {
       key: 'phone',
       width: 120,
     },
-    {
-      title: 'Giới tính',
-      dataIndex: 'gender',
-      key: 'gender',
-      width: 100,
-      render: (gender) => getGenderText(gender),
-    },
-    {
-      title: 'Vai trò',
-      dataIndex: 'role',
-      key: 'role',
-      width: 120,
-      render: (role) => (
-        <Tag color={getRoleColor(role)}>
-          {getRoleText(role)}
-        </Tag>
-      ),
-    },
+    // Bỏ cột giới tính
+    // {
+    //   title: 'Giới tính',
+    //   dataIndex: 'gender',
+    //   key: 'gender',
+    //   width: 100,
+    //   render: (gender) => getGenderText(gender),
+    // },
     {
       title: 'Trạng thái',
       dataIndex: 'isActive',
@@ -206,7 +220,7 @@ const Users = () => {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 200,
+      width: 260,
       fixed: 'right',
       render: (_, record) => (
         <Space>
@@ -217,14 +231,28 @@ const Users = () => {
           >
             Xem
           </Button>
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-            size="small"
-          >
-            Sửa
-          </Button>
+          {/* Không cho phép sửa hoặc khóa admin */}
+          {record.roleId !== 1 && (
+            <>
+              <Button
+                type="primary"
+                icon={<EditOutlined />}
+                onClick={() => handleEdit(record)}
+                size="small"
+              >
+                Sửa
+              </Button>
+              <Button
+                type={record.isActive ? 'default' : 'primary'}
+                danger={record.isActive}
+                icon={record.isActive ? <LockOutlined /> : <UnlockOutlined />}
+                onClick={() => handleToggleActive(record)}
+                size="small"
+              >
+                {record.isActive ? 'Khóa' : 'Mở khóa'}
+              </Button>
+            </>
+          )}
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa người dùng này?"
             onConfirm={() => handleDelete(record.email)}
@@ -236,6 +264,7 @@ const Users = () => {
               danger
               icon={<DeleteOutlined />}
               size="small"
+              disabled={record.roleId === 1}
             >
               Xóa
             </Button>
@@ -247,35 +276,34 @@ const Users = () => {
 
   return (
     <div style={{ padding: '24px' }}>
-      <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <Title level={3}>Quản lý người dùng</Title>
+      <Card style={{ borderRadius: 16, boxShadow: '0 2px 12px #e0e0e0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+          <Title level={3} style={{ margin: 0 }}>Quản lý người dùng</Title>
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleAdd}
+            style={{ borderRadius: 8, fontWeight: 500 }}
           >
             Thêm người dùng
           </Button>
         </div>
 
-        <div style={{ marginBottom: '16px' }}>
-          <Space>
-            <Input.Search
-              placeholder="Tìm kiếm theo tên hoặc email..."
-              allowClear
-              style={{ width: 300 }}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              onSearch={handleSearch}
-              enterButton={<SearchOutlined />}
-            />
-            {searchText && (
-              <Button onClick={() => { setSearchText(''); loadUsers(); }}>
-                Xóa tìm kiếm
-              </Button>
-            )}
-          </Space>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <Input.Search
+            placeholder="Tìm kiếm theo tên hoặc email..."
+            allowClear
+            style={{ width: 320, borderRadius: 8 }}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            onSearch={handleSearch}
+            enterButton={<SearchOutlined />}
+          />
+          {searchText && (
+            <Button onClick={() => { setSearchText(''); loadUsers(); }}>
+              Xóa tìm kiếm
+            </Button>
+          )}
         </div>
 
         <Table
@@ -290,6 +318,7 @@ const Users = () => {
             showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} người dùng`,
           }}
           scroll={{ x: 1200 }}
+          style={{ borderRadius: 12, overflow: 'hidden', background: '#fff' }}
         />
 
         {/* Modal thêm/sửa người dùng */}
@@ -298,13 +327,16 @@ const Users = () => {
           open={modalVisible}
           onCancel={() => setModalVisible(false)}
           footer={null}
-          width={600}
+          width={480}
           destroyOnClose
+          style={{ top: 80 }}
+          bodyStyle={{ padding: 24 }}
         >
           <Form
             form={form}
             layout="vertical"
             onFinish={handleSubmit}
+            style={{ maxWidth: 400, margin: '0 auto' }}
           >
             <Form.Item
               name="name"
@@ -338,47 +370,19 @@ const Users = () => {
               <Input placeholder="Nhập số điện thoại" />
             </Form.Item>
 
-            <Form.Item
-              name="address"
-              label="Địa chỉ"
-            >
-              <Input placeholder="Nhập địa chỉ" />
-            </Form.Item>
-
-            <Form.Item
-              name="dateOfBirth"
-              label="Ngày sinh"
-            >
-              <DatePicker 
-                placeholder="Chọn ngày sinh"
-                style={{ width: '100%' }}
-                format="DD/MM/YYYY"
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="gender"
-              label="Giới tính"
-            >
-              <Select placeholder="Chọn giới tính">
-                <Option value="male">Nam</Option>
-                <Option value="female">Nữ</Option>
-                <Option value="other">Khác</Option>
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              name="role"
-              label="Vai trò"
-              rules={[
-                { required: true, message: 'Vui lòng chọn vai trò!' }
-              ]}
-            >
-              <Select placeholder="Chọn vai trò">
-                <Option value="user">Người dùng</Option>
-                <Option value="admin">Quản trị viên</Option>
-              </Select>
-            </Form.Item>
+            {/* Nếu cần nhập mật khẩu khi tạo user mới */}
+            {!editingUser && (
+              <Form.Item
+                name="passwordHash"
+                label="Mật khẩu"
+                rules={[
+                  { required: true, message: 'Vui lòng nhập mật khẩu!' },
+                  { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' }
+                ]}
+              >
+                <Input.Password placeholder="Nhập mật khẩu" />
+              </Form.Item>
+            )}
 
             <Form.Item>
               <Space>
@@ -410,12 +414,11 @@ const Users = () => {
               <p><strong>Họ và tên:</strong> {detailUser.name}</p>
               <p><strong>Email:</strong> {detailUser.email}</p>
               <p><strong>Số điện thoại:</strong> {detailUser.phone || 'Không có'}</p>
-              <p><strong>Địa chỉ:</strong> {detailUser.address || 'Không có'}</p>
-              <p><strong>Ngày sinh:</strong> {detailUser.dateOfBirth ? new Date(detailUser.dateOfBirth).toLocaleDateString('vi-VN') : 'Không có'}</p>
-              <p><strong>Giới tính:</strong> {getGenderText(detailUser.gender)}</p>
-              <p><strong>Vai trò:</strong> <Tag color={getRoleColor(detailUser.role)}>{getRoleText(detailUser.role)}</Tag></p>
+              <p><strong>Điểm tích lũy:</strong> {detailUser.loyaltyPoints ?? 0}</p>
               <p><strong>Trạng thái:</strong> <Tag color={detailUser.isActive ? 'green' : 'red'}>{detailUser.isActive ? 'Hoạt động' : 'Không hoạt động'}</Tag></p>
               <p><strong>Ngày tạo:</strong> {detailUser.createdAt ? new Date(detailUser.createdAt).toLocaleDateString('vi-VN') : '-'}</p>
+              <p><strong>Ngày sửa:</strong> {detailUser.modifiedAt ? new Date(detailUser.modifiedAt).toLocaleDateString('vi-VN') : '-'}</p>
+              <p><strong>Vai trò:</strong> {detailUser.roleName || detailUser.roleId}</p>
             </div>
           )}
         </Modal>

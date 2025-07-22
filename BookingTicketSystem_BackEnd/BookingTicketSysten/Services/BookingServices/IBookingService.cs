@@ -12,5 +12,10 @@ namespace BookingTicketSysten.Services.BookingServices
         Task<IEnumerable<BookingDto>> GetBookingsByUserIdAsync(int userId);
         Task<IEnumerable<BookingDto>> GetBookingsByShowDateAsync(DateOnly date);
         Task<RevenueStatisticsDto> GetRevenueStatisticsAsync(DateTime? fromDate, DateTime? toDate);
+        Task<List<DailyRevenueDto>> GetDailyRevenueAsync(DateTime fromDate, DateTime toDate);
+        // Dashboard APIs
+        Task<IEnumerable<TopMovieDto>> GetTopMoviesAsync(int topN = 5);
+        Task<IEnumerable<TopUserDto>> GetTopUsersAsync(int topN = 5);
+        Task<IEnumerable<BookingDto>> GetRecentBookingsAsync(int topN = 5);
     }
 }

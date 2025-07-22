@@ -46,6 +46,34 @@ namespace BookingTicketSysten.Controllers
             return Ok(stats);
         }
 
+        [HttpGet("top-movies")]
+        public async Task<IActionResult> GetTopMovies([FromQuery] int topN = 5)
+        {
+            var result = await _bookingService.GetTopMoviesAsync(topN);
+            return Ok(result);
+        }
+
+        [HttpGet("top-users")]
+        public async Task<IActionResult> GetTopUsers([FromQuery] int topN = 5)
+        {
+            var result = await _bookingService.GetTopUsersAsync(topN);
+            return Ok(result);
+        }
+
+        [HttpGet("recent")]
+        public async Task<IActionResult> GetRecentBookings([FromQuery] int topN = 5)
+        {
+            var result = await _bookingService.GetRecentBookingsAsync(topN);
+            return Ok(result);
+        }
+
+        [HttpGet("daily-revenue")]
+        public async Task<IActionResult> GetDailyRevenue([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
+        {
+            var result = await _bookingService.GetDailyRevenueAsync(fromDate, toDate);
+            return Ok(result);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateBookingDto dto)
         {

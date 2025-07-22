@@ -2,6 +2,7 @@
 {
     public class UserDisplayDTOs()
     {
+        public int UserId { get; set; }
         public string? Name { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
@@ -9,6 +10,8 @@
         public DateTime CreatedAt { get; set; }
         public DateTime? ModifiedAt { get; set; }
         public bool? IsActive { get; set; }
+        public int RoleId { get; set; }
+        public string? RoleName { get; set; }
     }
     public class UserCreateDTOs()
     {
@@ -22,6 +25,7 @@
         public string? Name { get; set; }
         public string? Phone { get; set; }
         public string? PasswordHash { get; set; }
+        public bool? IsActive { get; set; }
     }
     public class UpdatePasswordDTO
     {

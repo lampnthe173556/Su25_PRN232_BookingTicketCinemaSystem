@@ -22,7 +22,7 @@ const Home = () => {
   const [genres, setGenres] = useState([]);
   const [topMovies, setTopMovies] = useState([]);
   const [search, setSearch] = useState("");
-  const [genre, setGenre] = useState("");
+  const [selectedGenres, setSelectedGenres] = useState([]); // Đổi thành mảng
   const [favoriteIds, setFavoriteIds] = useState([]);
   const [loadingFavoriteId, setLoadingFavoriteId] = useState(null);
 
@@ -76,10 +76,11 @@ const Home = () => {
   const filteredMovies = useMemo(() => {
     return movies.filter(movie => {
       const matchTitle = movie.title.toLowerCase().includes(search.toLowerCase());
-      const matchGenre = !genre || movie.Genres?.some(g => g.genreId === parseInt(genre));
+      const movieGenres = movie.Genres || movie.genres || [];
+      const matchGenre = selectedGenres.length === 0 || movieGenres.some(g => selectedGenres.includes(String(g.genreId)) || selectedGenres.includes(Number(g.genreId)));
       return matchTitle && matchGenre;
     });
-  }, [movies, search, genre]);
+  }, [movies, search, selectedGenres]);
 
   // Banner: lấy 4 phim nổi bật (top yêu thích hoặc random)
   const bannerMovies = topMovies.length > 0 ? topMovies.slice(0, 4) : movies.slice(0, 4);
@@ -241,14 +242,14 @@ const Home = () => {
           </Col>
           <Col xs={24} md={8}>
             <Select
-              value={genre}
-              onChange={setGenre}
+              mode="multiple"
+              value={selectedGenres}
+              onChange={setSelectedGenres}
               style={{ width: "100%" }}
               allowClear
               placeholder="Chọn thể loại"
             >
-              <Option value="">Tất cả</Option>
-              {genres.map(g => <Option key={g.genreId} value={g.genreId.toString()}>{g.name}</Option>)}
+              {genres.map(g => <Option key={g.genreId} value={String(g.genreId)}>{g.name}</Option>)}
             </Select>
           </Col>
         </Row>

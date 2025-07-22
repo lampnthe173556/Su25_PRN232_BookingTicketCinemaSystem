@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Row, Col, Typography, Tag, Button, Steps, Select, message, Spin, Empty } from "antd";
+import { Card, Row, Col, Typography, Tag, Button, Steps, Select, message, Spin, Empty, Segmented } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import movieService from "../../services/movieService";
@@ -11,6 +11,13 @@ import Toast from "../../components/Toast";
 const { Title } = Typography;
 const { Step } = Steps;
 const { Option } = Select;
+
+// Hàm lấy thứ trong tuần tiếng Việt
+function getWeekdayVN(dateStr) {
+  const days = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+  const d = new Date(dateStr);
+  return days[d.getDay()];
+}
 
 const Booking = () => {
   const location = useLocation();
@@ -28,27 +35,45 @@ const Booking = () => {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [seatAvailability, setSeatAvailability] = useState(null);
   const [seatMap, setSeatMap] = useState([]);
+  const [selectedWeekday, setSelectedWeekday] = useState('all');
 
   // Load movies khi component mount
   useEffect(() => {
     loadMovies();
   }, []);
 
-  // Xử lý tự động chọn phim, suất chiếu nếu có query
+  // Xử lý tự động chọn phim, suất chiếu nếu có query (chỉ khi vào trang lần đầu)
   useEffect(() => {
     if (!movieIdParam) return;
     if (movies.length === 0) return; // Chờ movies load xong
     const movie = movies.find(m => m.movieId === Number(movieIdParam));
     if (movie) {
       setSelectedMovie(movie);
-      loadShowtimes(movie.movieId);
-      if (showtimeIdParam) {
+      loadShowtimes(movie.movieId, showtimeIdParam);
+      // Chỉ tự động chuyển bước nếu lần đầu vào trang (có showtimeId trên URL)
+      if (showtimeIdParam && current === 0) {
         setCurrent(2);
-      } else {
+      } else if (current === 0) {
         setCurrent(1);
       }
     }
   }, [movieIdParam, showtimeIdParam, movies]);
+
+  // Khi đổi ngày lọc, nếu selectedShowtime không còn trong filteredShowtimes thì reset
+  useEffect(() => {
+    if (!selectedMovie || !selectedMovie.showtimes) return;
+    const filtered = selectedMovie.showtimes.filter(s => {
+      if (selectedWeekday === 'all') return true;
+      const d = new Date(s.startTime);
+      return d.getDay() === Number(selectedWeekday);
+    });
+    if (selectedShowtime && !filtered.some(s => s.showId === selectedShowtime.showId)) {
+      setSelectedShowtime(null);
+      setSelectedSeats([]);
+      setSeatAvailability(null);
+      setSeatMap([]);
+    }
+  }, [selectedWeekday, selectedMovie]);
 
   const loadMovies = async () => {
     try {
@@ -59,19 +84,16 @@ const Booking = () => {
     }
   };
 
-  const loadShowtimes = async (movieId) => {
+  // Sửa hàm loadShowtimes để không setCurrent nữa
+  const loadShowtimes = async (movieId, showtimeId) => {
     try {
       const showtimesData = await showService.getByMovie(movieId);
       setSelectedMovie(prev => ({ ...prev, showtimes: showtimesData }));
-      
-      if (showtimeIdParam) {
-        const show = showtimesData.find(s => s.showId === Number(showtimeIdParam));
+      if (showtimeId) {
+        const show = showtimesData.find(s => s.showId === Number(showtimeId));
         if (show) {
           setSelectedShowtime(show);
           await loadSeatAvailability(show.showId);
-          setCurrent(2); // Nhảy đến bước chọn ghế
-        } else {
-          setCurrent(1); // Nhảy đến bước chọn suất chiếu
         }
       }
     } catch (error) {
@@ -110,6 +132,8 @@ const Booking = () => {
     
     if (movie) {
       await loadShowtimes(movie.movieId);
+      // Cập nhật URL chỉ với movieId (xóa showtimeId nếu có)
+      navigate(`?movieId=${movie.movieId}`, { replace: true });
     }
   };
 
@@ -121,6 +145,9 @@ const Booking = () => {
     
     if (show) {
       await loadSeatAvailability(show.showId);
+      // Cập nhật URL với movieId và showtimeId mới
+      navigate(`?movieId=${selectedMovie.movieId}&showtimeId=${show.showId}`, { replace: true });
+      // Không setCurrent(2) ở đây nữa
     }
   };
 
@@ -180,17 +207,29 @@ const Booking = () => {
     }
   };
 
+  // Lấy danh sách suất chiếu đã lọc theo thứ
+  const filteredShowtimes = selectedMovie?.showtimes?.filter(s => {
+    if (selectedWeekday === 'all') return true;
+    const d = new Date(s.startTime);
+    return d.getDay() === Number(selectedWeekday);
+  }) || [];
+
   const steps = [
     {
       title: "Chọn phim",
       content: (
         <div>
           <Select
+            showSearch
             placeholder="Chọn phim..."
             style={{ width: 300 }}
             value={selectedMovie?.movieId}
             onChange={handleSelectMovie}
             loading={movies.length === 0}
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
           >
             {movies.map(m => (
               <Option key={m.movieId} value={m.movieId}>{m.title}</Option>
@@ -216,14 +255,54 @@ const Booking = () => {
       title: "Chọn suất chiếu",
       content: selectedMovie ? (
         <div>
+          <div style={{
+            background: '#f5f5f5',
+            borderRadius: 12,
+            padding: '16px 12px 8px 12px',
+            marginBottom: 20,
+            boxShadow: '0 2px 8px #e0e0e0',
+            width: '100%',
+            maxWidth: '100%',
+            minHeight: 60,
+            display: 'block',
+          }}>
+            <Segmented
+              options={[
+                { label: <div style={{display:'grid', placeItems:'center', width:'100%'}}><div style={{fontWeight: selectedWeekday==='all'?'bold':'normal', color: selectedWeekday==='all'?'#1890ff':'#222'}}>Tất cả</div><div style={{fontSize:12, fontWeight:'normal'}}> </div></div>, value: 'all' },
+                { label: <div style={{display:'grid', placeItems:'center', width:'100%'}}><div style={{fontWeight: selectedWeekday==='1'?'bold':'normal', color: selectedWeekday==='1'?'#1890ff':'#222'}}>Mon</div><div style={{fontSize:12, fontWeight:'normal'}}>Thứ Hai</div></div>, value: '1' },
+                { label: <div style={{display:'grid', placeItems:'center', width:'100%'}}><div style={{fontWeight: selectedWeekday==='2'?'bold':'normal', color: selectedWeekday==='2'?'#1890ff':'#222'}}>Tue</div><div style={{fontSize:12, fontWeight:'normal'}}>Thứ Ba</div></div>, value: '2' },
+                { label: <div style={{display:'grid', placeItems:'center', width:'100%'}}><div style={{fontWeight: selectedWeekday==='3'?'bold':'normal', color: selectedWeekday==='3'?'#1890ff':'#222'}}>Wed</div><div style={{fontSize:12, fontWeight:'normal'}}>Thứ Tư</div></div>, value: '3' },
+                { label: <div style={{display:'grid', placeItems:'center', width:'100%'}}><div style={{fontWeight: selectedWeekday==='4'?'bold':'normal', color: selectedWeekday==='4'?'#1890ff':'#222'}}>Thu</div><div style={{fontSize:12, fontWeight:'normal'}}>Thứ Năm</div></div>, value: '4' },
+                { label: <div style={{display:'grid', placeItems:'center', width:'100%'}}><div style={{fontWeight: selectedWeekday==='5'?'bold':'normal', color: selectedWeekday==='5'?'#1890ff':'#222'}}>Fri</div><div style={{fontSize:12, fontWeight:'normal'}}>Thứ Sáu</div></div>, value: '5' },
+                { label: <div style={{display:'grid', placeItems:'center', width:'100%'}}><div style={{fontWeight: selectedWeekday==='6'?'bold':'normal', color: selectedWeekday==='6'?'#1890ff':'#222'}}>Sat</div><div style={{fontSize:12, fontWeight:'normal'}}>Thứ Bảy</div></div>, value: '6' },
+                { label: <div style={{display:'grid', placeItems:'center', width:'100%'}}><div style={{fontWeight: selectedWeekday==='0'?'bold':'normal', color: selectedWeekday==='0'?'#1890ff':'#222'}}>Sun</div><div style={{fontSize:12, fontWeight:'normal'}}>Chủ Nhật</div></div>, value: '0' },
+              ]}
+              value={selectedWeekday}
+              onChange={setSelectedWeekday}
+              size="large"
+              style={{
+                width: '100%',
+                border: 'none',
+                fontSize: 16,
+                margin: '0 auto',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(8, 1fr)',
+                gap: 0,
+                minWidth: 700,
+                maxWidth: '100%',
+              }}
+            />
+          </div>
           <Select
             placeholder="Chọn suất chiếu..."
-            style={{ width: 400 }}
+            style={{ width: 400, borderRadius: 8, boxShadow: '0 2px 8px #e0e0e0' }}
             value={selectedShowtime?.showId}
             onChange={handleSelectShowtime}
             loading={!selectedMovie.showtimes}
+            dropdownStyle={{ borderRadius: 8, boxShadow: '0 4px 16px #e0e0e0' }}
           >
-            {selectedMovie.showtimes?.map(s => (
+            {filteredShowtimes.length === 0 && <Option disabled>Không có suất chiếu phù hợp</Option>}
+            {filteredShowtimes.map(s => (
               <Option key={s.showId} value={s.showId}>
                 {`${new Date(s.startTime).toLocaleDateString('vi-VN')} - ${new Date(s.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} | ${s.hallName} | ${s.cinemaName || ''}`}
               </Option>
@@ -231,6 +310,7 @@ const Booking = () => {
           </Select>
           {selectedShowtime && (
             <div style={{ marginTop: 16 }}>
+              <Tag color="blue">{getWeekdayVN(selectedShowtime.startTime)}</Tag>
               <Tag color="blue">{new Date(selectedShowtime.startTime).toLocaleDateString('vi-VN')}</Tag>
               <Tag color="green">{new Date(selectedShowtime.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</Tag>
               <Tag color="purple">{selectedShowtime.hallName}</Tag>
@@ -334,6 +414,9 @@ const Booking = () => {
             <b>Phim:</b> {selectedMovie?.title}
           </div>
           <div style={{ marginBottom: 16 }}>
+            <b>Rạp chiếu:</b> {selectedShowtime?.cinemaName || '-'}
+          </div>
+          <div style={{ marginBottom: 16 }}>
             <b>Suất chiếu:</b> {selectedShowtime ? 
               `${new Date(selectedShowtime.startTime).toLocaleDateString('vi-VN')} - ${new Date(selectedShowtime.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} (${selectedShowtime.hallName})` : 
               ""
@@ -377,6 +460,13 @@ const Booking = () => {
   };
 
   const prev = () => {
+    // Nếu đang ở bước chọn ghế (2) quay lại bước chọn suất chiếu (1), reset các state liên quan
+    if (current === 2) {
+      setSelectedShowtime(null);
+      setSelectedSeats([]);
+      setSeatAvailability(null);
+      setSeatMap([]);
+    }
     setCurrent(current - 1);
   };
 

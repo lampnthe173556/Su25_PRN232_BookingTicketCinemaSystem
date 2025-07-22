@@ -9,14 +9,14 @@ import { useAuth } from "../../hooks/useAuth";
 const { Title } = Typography;
 const { Option } = Select;
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 10;
 
 const AllMovies = () => {
   const [movies, setMovies] = useState([]);
   const [genres, setGenres] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-  const [genre, setGenre] = useState(null);
+  const [selectedGenres, setSelectedGenres] = useState([]); // Đổi thành mảng
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [favoriteIds, setFavoriteIds] = useState([]);
@@ -27,7 +27,7 @@ const AllMovies = () => {
 
   useEffect(() => {
     loadGenres();
-    loadMovies(1, search, genre);
+    loadMovies(1, search, selectedGenres);
     if (user) loadFavorites();
     // eslint-disable-next-line
   }, [user]);
@@ -39,15 +39,18 @@ const AllMovies = () => {
     } catch {}
   };
 
-  const loadMovies = async (pageNum = 1, searchText = "", genreId = null) => {
+  const loadMovies = async (pageNum = 1, searchText = "", genreIds = []) => {
     setLoading(true);
     try {
       let all = await movieService.getAll();
       if (searchText) {
         all = all.filter(m => m.title.toLowerCase().includes(searchText.toLowerCase()));
       }
-      if (genreId) {
-        all = all.filter(m => m.genres && m.genres.some(g => g.genreId === genreId));
+      if (genreIds && genreIds.length > 0) {
+        all = all.filter(m => {
+          const movieGenres = m.genres || m.Genres || [];
+          return movieGenres.some(g => genreIds.includes(String(g.genreId)) || genreIds.includes(Number(g.genreId)));
+        });
       }
       setTotal(all.length);
       setMovies(all.slice((pageNum - 1) * PAGE_SIZE, pageNum * PAGE_SIZE));
@@ -71,16 +74,16 @@ const AllMovies = () => {
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
-    loadMovies(1, e.target.value, genre);
+    loadMovies(1, e.target.value, selectedGenres);
   };
 
-  const handleGenre = (value) => {
-    setGenre(value);
-    loadMovies(1, search, value);
+  const handleGenre = (values) => {
+    setSelectedGenres(values);
+    loadMovies(1, search, values);
   };
 
   const handlePage = (p) => {
-    loadMovies(p, search, genre);
+    loadMovies(p, search, selectedGenres);
   };
 
   const handleViewDetail = (movie) => {
@@ -128,14 +131,15 @@ const AllMovies = () => {
         </Col>
         <Col xs={24} sm={12} md={8} lg={6}>
           <Select
+            mode="multiple"
             placeholder="Chọn thể loại"
-            value={genre}
+            value={selectedGenres}
             onChange={handleGenre}
             allowClear
             style={{ width: '100%' }}
           >
             {genres.map(g => (
-              <Option key={g.genreId} value={g.genreId}>{g.name}</Option>
+              <Option key={g.genreId} value={String(g.genreId)}>{g.name}</Option>
             ))}
           </Select>
         </Col>

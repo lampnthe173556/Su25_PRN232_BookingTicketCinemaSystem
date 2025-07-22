@@ -11,10 +11,11 @@ import {
   message,
   Empty
 } from 'antd';
-import { EyeOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { EyeOutlined, CloseCircleOutlined, QrcodeOutlined } from '@ant-design/icons';
 import { useAuth } from '../../hooks/useAuth';
 import bookingService from '../../services/bookingService';
 import Toast from '../../components/Toast';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const { Title } = Typography;
 
@@ -24,6 +25,8 @@ const BookingHistory = () => {
   const [loading, setLoading] = useState(false);
   const [detailVisible, setDetailVisible] = useState(false);
   const [detailBooking, setDetailBooking] = useState(null);
+  const [qrVisible, setQrVisible] = useState(false);
+  const [qrBooking, setQrBooking] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -135,9 +138,9 @@ const BookingHistory = () => {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 200,
+      width: 250,
       render: (_, record) => (
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <Space size={0} style={{ width: '100%', justifyContent: 'center', display: 'flex' }}>
           <Button 
             type="link" 
             icon={<EyeOutlined />} 
@@ -145,6 +148,18 @@ const BookingHistory = () => {
           >
             Chi tiết
           </Button>
+          {record.status?.toLowerCase() !== 'cancelled' && (
+            <Button
+              type="link"
+              icon={<QrcodeOutlined />}
+              onClick={() => {
+                setQrBooking(record);
+                setQrVisible(true);
+              }}
+            >
+              QR-code
+            </Button>
+          )}
           {record.status?.toLowerCase() === 'confirmed' && (
             <Button 
               type="link" 
@@ -161,7 +176,7 @@ const BookingHistory = () => {
               Hủy
             </Button>
           )}
-        </div>
+        </Space>
       ),
     },
   ];
@@ -195,6 +210,43 @@ const BookingHistory = () => {
           emptyText: <Empty description="Chưa có lịch sử đặt vé nào" />
         }}
       />
+
+      {/* Modal QR-code */}
+      <Modal
+        title="QR-code vé phim"
+        open={qrVisible}
+        onCancel={() => setQrVisible(false)}
+        footer={null}
+        width={340}
+        centered
+      >
+        {qrBooking && (
+          <div style={{ textAlign: 'center' }}>
+            <QRCodeCanvas
+              id="booking-qrcode"
+              value={JSON.stringify({
+                bookingId: qrBooking.bookingId,
+                movieTitle: qrBooking.movieTitle,
+                showStartTime: qrBooking.showStartTime,
+                seats: qrBooking.seats?.map(seat => `${seat.rowNumber}${seat.columnNumber}`).join(', ')
+              })}
+              size={220}
+              level="H"
+              includeMargin={true}
+            />
+            <div style={{ marginTop: 12 }}>
+              <Button type="primary" onClick={() => {
+                const canvas = document.getElementById('booking-qrcode');
+                const url = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `ve_phim_${qrBooking.bookingId}.png`;
+                link.click();
+              }}>Tải QR-code vé</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Modal chi tiết */}
       <Modal

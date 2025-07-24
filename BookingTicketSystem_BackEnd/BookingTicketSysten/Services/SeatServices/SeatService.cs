@@ -112,8 +112,58 @@ namespace BookingTicketSysten.Services.SeatServices
 
             _context.Seats.Remove(seat);
             await _context.SaveChangesAsync();
-
             return "Seat deleted successfully.";
+        }
+
+        // Thêm methods mới cho booking
+        public async Task<List<SeatDto>> GetSeatsByHallAsync(int hallId)
+        {
+            return await _context.Seats
+                .Where(s => s.HallId == hallId)
+                .Select(s => new SeatDto
+                {
+                    SeatId = s.SeatId,
+                    HallId = s.HallId,
+                    RowNumber = s.RowNumber,
+                    ColumnNumber = s.ColumnNumber,
+                    SeatType = s.SeatType
+                })
+                .ToListAsync();
+        }
+
+        public async Task<List<int>> GetBookedSeatIdsByShowAsync(int showId)
+        {
+            return await _context.BookedSeats
+                .Where(bs => bs.ShowId == showId)
+                .Select(bs => bs.SeatId)
+                .ToListAsync();
+        }
+
+        public async Task<SeatAvailabilityDto> GetSeatAvailabilityAsync(int showId)
+        {
+            var show = await _context.Shows
+                .Include(s => s.Hall)
+                .FirstOrDefaultAsync(s => s.ShowId == showId);
+
+            if (show == null)
+                throw new ArgumentException("Show not found");
+
+            var allSeats = await GetSeatsByHallAsync(show.HallId);
+            var bookedSeatIds = await GetBookedSeatIdsByShowAsync(showId);
+            var availableSeats = allSeats.Where(s => !bookedSeatIds.Contains(s.SeatId)).ToList();
+
+            return new SeatAvailabilityDto
+            {
+                ShowId = showId,
+                HallId = show.HallId,
+                HallName = show.Hall.Name,
+                AllSeats = allSeats,
+                BookedSeatIds = bookedSeatIds,
+                AvailableSeats = availableSeats,
+                TotalSeats = allSeats.Count,
+                BookedSeats = bookedSeatIds.Count,
+                AvailableSeatsCount = availableSeats.Count
+            };
         }
     }
 }

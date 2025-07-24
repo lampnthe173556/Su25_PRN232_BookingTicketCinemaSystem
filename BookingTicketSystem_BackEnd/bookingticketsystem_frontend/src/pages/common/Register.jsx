@@ -18,7 +18,7 @@ const Register = () => {
       // Nếu message là đăng ký thành công
       if (res && res.message === "Đăng ký thành công") {
         message.success(res.message);
-        setTimeout(() => navigate("/login"), 1000);
+    setTimeout(() => navigate("/login"), 1000);
         return;
       }
       // Trường hợp khác (không xác định)

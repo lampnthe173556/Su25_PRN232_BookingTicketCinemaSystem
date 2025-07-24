@@ -28,10 +28,16 @@ const Login = () => {
       // Nếu có token (res.data) => thành công
       if (res && res.data) {
         const decoded = jwtDecode(res.data);
+        console.log('Decoded JWT:', decoded);
+        
         const userInfo = {
           ...decoded,
+          // Map user ID từ các claim có thể có
+          userId: decoded.nameid || decoded.sub || decoded.NameIdentifier || decoded.userId,
           token: res.data
         };
+        
+        console.log('User info after mapping:', userInfo);
         login(userInfo);
         message.success("Đăng nhập thành công!");
         setTimeout(() => {
@@ -56,10 +62,16 @@ const Login = () => {
       const res = await authService.loginWithGoogle(idToken);
       if (res && res.data) {
         const decoded = jwtDecode(res.data);
+        console.log('Decoded Google JWT:', decoded);
+        
         const userInfo = {
           ...decoded,
+          // Map user ID từ các claim có thể có
+          userId: decoded.nameid || decoded.sub || decoded.NameIdentifier || decoded.userId,
           token: res.data
         };
+        
+        console.log('Google user info after mapping:', userInfo);
         login(userInfo);
         message.success("Đăng nhập Google thành công!");
         setTimeout(() => {

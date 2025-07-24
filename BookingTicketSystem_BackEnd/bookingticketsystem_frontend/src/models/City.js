@@ -1,17 +1,17 @@
 export class City {
   constructor(data = {}) {
-    this.id = data.id || data.cityId || null;
+    this.cityId = data.cityId || null;
     this.name = data.name || '';
     this.cinemaCount = data.cinemaCount || 0;
-    this.cinemas = data.cinemas || [];
+    this.Cinemas = data.Cinemas || [];
   }
 
   static fromApi(data) {
     return new City({
-      id: data.cityId || data.id,
+      cityId: data.cityId || data.id,
       name: data.name,
       cinemaCount: data.cinemaCount,
-      cinemas: data.cinemas || []
+      Cinemas: data.cinemas || []
     });
   }
 

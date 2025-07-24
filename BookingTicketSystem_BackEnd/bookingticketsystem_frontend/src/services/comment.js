@@ -41,4 +41,10 @@ export function getAverageRating(movieId) {
   return (
     movieComments.reduce((sum, c) => sum + c.rating, 0) / movieComments.length
   );
-} 
+}
+
+export default {
+  getCommentsByMovie,
+  addComment,
+  getAverageRating
+}; 

@@ -97,7 +97,7 @@ const Actors = () => {
       });
       
       if (editingPerson) {
-        await personService.update(editingPerson.id, personData, photoFile);
+        await personService.update(editingPerson.personId, personData, photoFile);
         Toast.success('Cập nhật diễn viên/đạo diễn thành công');
       } else {
         await personService.create(personData, photoFile);
@@ -140,10 +140,10 @@ const Actors = () => {
     setDetailPerson(record);
     setDetailVisible(true);
     setLoadingDetail(true);
-    if (record.id !== null && record.id !== undefined) {
+    if (record.personId !== null && record.personId !== undefined) {
       try {
         const movieService = (await import('../../services/movieService')).default;
-        const movies = await movieService.getByPerson(record.id);
+        const movies = await movieService.getByPerson(record.personId);
         setMoviesByPerson(movies);
       } catch (error) {
         setMoviesByPerson([]);
@@ -157,8 +157,8 @@ const Actors = () => {
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: 'personId',
+      key: 'personId',
       width: 80,
     },
     {
@@ -222,7 +222,7 @@ const Actors = () => {
           </Button>
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa diễn viên/đạo diễn này?"
-            onConfirm={() => handleDelete(record.id)}
+            onConfirm={() => handleDelete(record.personId)}
             okText="Có"
             cancelText="Không"
           >
@@ -256,8 +256,8 @@ const Actors = () => {
 
         <Table
           columns={columns}
-          dataSource={persons.map((item, idx) => ({ ...item, key: item.id ?? `row-${idx}` }))}
-          rowKey="key"
+          dataSource={persons.map((item, idx) => ({ ...item, key: item.personId ?? `row-${idx}` }))}
+          rowKey="personId"
           loading={loading}
           pagination={{
             pageSize: 10,

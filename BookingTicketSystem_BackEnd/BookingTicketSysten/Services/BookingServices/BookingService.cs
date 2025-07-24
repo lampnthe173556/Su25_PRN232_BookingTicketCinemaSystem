@@ -18,6 +18,7 @@ namespace BookingTicketSysten.Services.BookingServices
             return await _context.Bookings
                 .Include(b => b.User)
                 .Include(b => b.Show).ThenInclude(s => s.Movie)
+                .Include(b => b.Show).ThenInclude(s => s.Hall).ThenInclude(h => h.Cinema)
                 .Include(b => b.BookedSeats).ThenInclude(bs => bs.Seat)
                 .Select(b => new BookingDto
                 {
@@ -35,7 +36,10 @@ namespace BookingTicketSysten.Services.BookingServices
                         RowNumber = bs.Seat.RowNumber,
                         ColumnNumber = bs.Seat.ColumnNumber,
                         SeatType = bs.Seat.SeatType
-                    }).ToList()
+                    }).ToList(),
+                    HallName = b.Show.Hall.Name,
+                    CinemaName = b.Show.Hall.Cinema.Name,
+                    CinemaAddress = b.Show.Hall.Cinema.Address
                 }).ToListAsync();
         }
 
@@ -44,6 +48,7 @@ namespace BookingTicketSysten.Services.BookingServices
             var b = await _context.Bookings
                 .Include(b => b.User)
                 .Include(b => b.Show).ThenInclude(s => s.Movie)
+                .Include(b => b.Show).ThenInclude(s => s.Hall).ThenInclude(h => h.Cinema)
                 .Include(b => b.BookedSeats).ThenInclude(bs => bs.Seat)
                 .FirstOrDefaultAsync(b => b.BookingId == id);
 
@@ -65,7 +70,10 @@ namespace BookingTicketSysten.Services.BookingServices
                     RowNumber = bs.Seat.RowNumber,
                     ColumnNumber = bs.Seat.ColumnNumber,
                     SeatType = bs.Seat.SeatType
-                }).ToList()
+                }).ToList(),
+                HallName = b.Show.Hall.Name,
+                CinemaName = b.Show.Hall.Cinema.Name,
+                CinemaAddress = b.Show.Hall.Cinema.Address
             };
         }
 
@@ -128,6 +136,7 @@ namespace BookingTicketSysten.Services.BookingServices
                 .Where(b => b.UserId == userId)
                 .Include(b => b.User)
                 .Include(b => b.Show).ThenInclude(s => s.Movie)
+                .Include(b => b.Show).ThenInclude(s => s.Hall).ThenInclude(h => h.Cinema)
                 .Include(b => b.BookedSeats).ThenInclude(bs => bs.Seat)
                 .Select(b => new BookingDto
                 {
@@ -145,7 +154,10 @@ namespace BookingTicketSysten.Services.BookingServices
                         RowNumber = bs.Seat.RowNumber,
                         ColumnNumber = bs.Seat.ColumnNumber,
                         SeatType = bs.Seat.SeatType
-                    }).ToList()
+                    }).ToList(),
+                    HallName = b.Show.Hall.Name,
+                    CinemaName = b.Show.Hall.Cinema.Name,
+                    CinemaAddress = b.Show.Hall.Cinema.Address
                 }).ToListAsync();
         }
 
@@ -154,6 +166,7 @@ namespace BookingTicketSysten.Services.BookingServices
             return await _context.Bookings
                 .Include(b => b.User)
                 .Include(b => b.Show).ThenInclude(s => s.Movie)
+                .Include(b => b.Show).ThenInclude(s => s.Hall).ThenInclude(h => h.Cinema)
                 .Include(b => b.BookedSeats).ThenInclude(bs => bs.Seat)
                 .Where(b => b.Show.ShowDate == date)
                 .Select(b => new BookingDto
@@ -172,7 +185,10 @@ namespace BookingTicketSysten.Services.BookingServices
                         RowNumber = bs.Seat.RowNumber,
                         ColumnNumber = bs.Seat.ColumnNumber,
                         SeatType = bs.Seat.SeatType
-                    }).ToList()
+                    }).ToList(),
+                    HallName = b.Show.Hall.Name,
+                    CinemaName = b.Show.Hall.Cinema.Name,
+                    CinemaAddress = b.Show.Hall.Cinema.Address
                 }).ToListAsync();
         }
 

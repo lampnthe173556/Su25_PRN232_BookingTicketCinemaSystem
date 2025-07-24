@@ -6,5 +6,15 @@ export const API_ENDPOINTS = {
   PERSONS: '/Person',
   CITIES: '/City',
   AUTH: '/Authentication',
-  USERS: '/User'
+  USERS: '/User',
+  SHOWS: '/Show',
+  VOTES: '/Vote',
+  BOOKINGS: '/Booking',
+  CINEMAS: '/admin/Cinema',
+  CINEMA_HALLS: '/admin/CinemaHall',
+  PAYMENTS: '/Payment',
+  COMMENTS: '/Comment',
+  MOVIE_FAVORITES: '/MovieFavorite',
+  SEATS: '/admin/Seat',
+  PUBLIC_SEATS: '/PublicSeat'
 }; 
